@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload TXT</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+      <div class="upload-box" id="dropZone">
+        <input type="file" name="file" id="fileInput" accept=".txt" hidden>
+        <p id="uploadText">Click to browse or drag a text file here</p>
+      </div>
+      <button type="submit" class="upload-btn">Upload</button>
+      {% if message %}
+        <span class="error-message">{{ message }}</span>
+      {% endif %}
+    </form>
+
+    {% if content %}
+      <div class="output">
+        <h3>File Content:</h3>
+        <pre>{{ content }}</pre>
+      </div>
+    {% endif %}
+  </div>
+
+  <script>
+    const dropZone = document.getElementById("dropZone");  // Div where users can drag files or click
+    const fileInput = document.getElementById("fileInput"); // Hidden file input
+    const uploadText = document.getElementById("uploadText"); // Text inside the drop zone
+
+    // Helper function to update the displayed file name
+    const updateFileName = (file) => {
+      // If a file is provided, show its name, otherwise show default prompt
+      uploadText.textContent = file ? file.name : "Click to browse or drag a text file here";
+    };
+
+    // Click drop zone to trigger hidden file input
+    dropZone.addEventListener("click", () => fileInput.click());
+
+    // Add listeners for drag and drop events
+    ["dragover", "dragleave", "drop"].forEach(event => {
+      dropZone.addEventListener(event, (e) => {
+        if (event === "dragover") e.preventDefault(); // Prevent browser default and allow drop
+
+        // Toggle 'dragover' class only when dragging over
+        dropZone.classList.toggle("dragover", event === "dragover");
+
+        // Handle dropped file
+        if (event === "drop") {
+          e.preventDefault(); // Prevent browser default behavior
+          const file = e.dataTransfer.files[0]; // Get the first dropped file
+          if (file) {
+            fileInput.files = e.dataTransfer.files; // Set it to the file input
+            updateFileName(file); // Update the default text to now show the file name
+          }
+        }
+      });
+    });
+
+    // Update the text when user selects a file via the file input
+    fileInput.addEventListener("change", () => updateFileName(fileInput.files[0]));
+  </script>
+
+</body>
+</html>
