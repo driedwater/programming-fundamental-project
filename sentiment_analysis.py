@@ -20,7 +20,7 @@ def load_afinn_to_dictionary(path: str) -> dict:
     return afinn_dict
 
 
-def get_sentence_sentiment_score(afinn_dict: list[dict], sentence: str) -> int:
+def get_sentence_sentiment_score(afinn_dict: dict, sentence: str) -> int:
     """
     This function calculates the sentiment score of the sentence inputted by splitting
     each word, check if word exist in afinn_dict then adding up the score and dividing by
@@ -50,7 +50,7 @@ def get_sentence_sentiment_score(afinn_dict: list[dict], sentence: str) -> int:
     return rescaled_score
 
 
-def add_score_to_dict(sentences_list: list, score_list: list) -> dict:
+def add_score_to_dict(sentences_list: list[dict], score_list: list) -> dict:
     """
     add sentiment score to a dictionary
 
