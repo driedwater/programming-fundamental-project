@@ -119,10 +119,9 @@ def complete_tokenization(text):
     paragraphs_sentences = [sentence_endings.split(p) for p in paragraphs]
 
     hierarchical_tokens = []
+
     # Loop through paragraphs
     for p, para in enumerate(paragraphs_sentences, 1):
-
-        tokenized_sentences = []
         # Loop through sentences
         for s, sentence in enumerate(para, 1):
             # Convert accented text first so text like neédn't are likely to be accepted further down
@@ -137,16 +136,21 @@ def complete_tokenization(text):
             # Remove stopwords
             text = remove_stopwords(text)
 
-            tokenized_sentences.append({
-                f"Para: {p}, Sentence: {s}": sentence,
-                "Tokens": text
+            hierarchical_tokens.append({
+                "para": p,
+                "sentence": s,
+                "original": sentence,
+                "tokens": text
             })
-        hierarchical_tokens.append(tokenized_sentences)
 
     return  hierarchical_tokens
 
+if __name__ == "__main__":
+    sample_text = "***who now??? :D**** whom Our <p></p> NOT GOOD éXpéctéd<br /><br /> Must've needn't. needn wouldn't <br /><br /> ourselves you ya'll. meow y'all're <br /><br /> y'all've wrapped"
+    # sample_text.islower()
+    # sample_text = """
+    # ***May Contain Spoilers*** OK, it wasn't exactly as good as expected in fact it was a lot different than I had thought it would be but it still turned out to be a pretty good movie.<br /><br />I usually don't care too much for that type of music but in this movie it worked perfectly (I mean duh he's a rock star) but anyway I loved Stuart Townsend in this, and Aaliyah, although she had a small part in the movie was amazing.<br /><br />And even though Tom Cruise played Lestat in the Interview with a Vampire, I have to admit that I am glad he turned down the role even though I normally hate when they use different people to play the same characters in like sequels and stuff.<br /><br />Overall, the movie was great and I enjoyed watching it, even if there were parts that could have been better. Great vampire movie.
+    # """
 
-
-
-
-
+    result = complete_tokenization(sample_text)
+    print(result)
