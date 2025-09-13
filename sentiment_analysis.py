@@ -78,6 +78,20 @@ def binary_search(input_list: list, word: str) -> bool:
 
     return False
 
+def add_score_to_dict(sentences_list: list[dict], score_list: list) -> dict:
+    """
+    add sentiment score to a dictionary
+
+    :params sentences_list: the list containing dictionaries where the function will add scores to
+    :params score_list: the list of scores to add to each dictionary
+    """
+
+    for index, sentence_dict in enumerate(sentences_list):
+        current_score = score_list[index]
+        sentence_dict["score"] = current_score
+
+    return sentences_list
+
 
 def compute_all_sentences(sentences_list: list[dict]) -> list[dict]:
     """
