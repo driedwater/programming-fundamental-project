@@ -32,17 +32,17 @@ def get_sentence_sentiment_score(afinn_dict: dict, sentence: str) -> int:
     :returns: sentiment score of the sentence
     """
     score = 0
-    word_list = sentence.split(" ")
-    word_count = len(word_list)
-    
-    for word in word_list:
-        # make it more efficient
-        # e.g. binary search
-        
-        if word in afinn_dict:
+    sentence_word_list = sentence.split(" ")
+    sentence_word_count = len(sentence_word_list)
+    afinn_words_list = list(afinn_dict.keys())
+
+    for word in sentence_word_list:
+        found = binary_search(afinn_words_list, word)
+
+        if found:
             score += afinn_dict[word]
-    
-    final_score = round(score / word_count, 5)
+
+    final_score = round(score / sentence_word_count, 5)
 
     # rescale score so that the max range is -1 to 1 instead of -5 to 5
     rescaled_score = final_score / 5
@@ -50,19 +50,33 @@ def get_sentence_sentiment_score(afinn_dict: dict, sentence: str) -> int:
     return rescaled_score
 
 
-def add_score_to_dict(sentences_list: list[dict], score_list: list) -> dict:
+def binary_search(input_list: list, word: str) -> bool:
     """
-    add sentiment score to a dictionary
+    this function will use binary search algorithm to search for an item in a list
 
-    :params sentences_list: the list containing dictionaries where the function will add scores to
-    :params score_list: the list of scores to add to each dictionary
+    :params input_list: the list of items to search in
+    :params word: the word to search in the list
+
+    :returns: true if found, false if not found
     """
 
-    for index, sentence_dict in enumerate(sentences_list):
-        current_score = score_list[index]
-        sentence_dict["score"] = current_score
+    left_index = 0
+    right_index = len(input_list) - 1
 
-    return sentences_list
+    while left_index <= right_index:
+
+        mid_index = (left_index + right_index) // 2
+
+        if input_list[mid_index] == word:
+            return True
+
+        elif input_list[mid_index] < word:
+            left_index = mid_index + 1
+
+        else:
+            right_index = mid_index - 1
+
+    return False
 
 
 def compute_all_sentences(sentences_list: list[dict]) -> list[dict]:
