@@ -1,12 +1,3 @@
-# Inputs = [{'para': 1, 'sentence': 1, 'original': '***who now???', 'tokens': '', 'score': 0},
-#           {'para': 1, 'sentence': 2, 'original': ':D**** whom Our <p></p> NOT GOOD éXpéctéd', 'tokens': 'not good expected', 'score': 0.3},
-#           {'para': 2, 'sentence': 1, 'original': "Must've needn't.", 'tokens': 'must need not', 'score': -0.852},
-#           {'para': 2, 'sentence': 2, 'original': "needn wouldn't", 'tokens': 'would not', 'score': 0.91},
-#           {'para': 3, 'sentence': 1, 'original': "ourselves you ya'll.", 'tokens': 'yall', 'score': 0.99},
-#           {'para': 3, 'sentence': 2, 'original': "meow y'all're", 'tokens': 'meow', 'score': 0.99},
-#           {'para': 4, 'sentence': 1, 'original': "y'all've wrapped", 'tokens': 'wrapped', 'score': -0.2579}]
-
-#SENTIMENT ANALYSIS
 #Identify the sentence with the highest sentiment score in the entire text
 def most_positive_sentence(Dictionary):
     max_value = None

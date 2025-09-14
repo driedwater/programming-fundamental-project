@@ -1,13 +1,3 @@
-# InputDict = [{'para': 1, 'sentence': 1, 'original': '***who now???', 'tokens': '', 'score': 0},
-#           {'para': 1, 'sentence': 2, 'original': ':D**** whom Our <p></p> NOT GOOD éXpéctéd', 'tokens': 'not good expected', 'score': 0.3},
-#           {'para': 1, 'sentence': 3, 'original': "Must've needn't.", 'tokens': 'must need not', 'score': -0.852},
-#           {'para': 1, 'sentence': 4, 'original': "needn wouldn't", 'tokens': 'would not', 'score': 0.91},
-#           {'para': 1, 'sentence': 5, 'original': "ourselves you ya'll.", 'tokens': 'yall', 'score': -0.91},
-#           {'para': 2, 'sentence': 1, 'original': "meow y'all're", 'tokens': 'meow', 'score': 0.99},
-#           {'para': 2, 'sentence': 2, 'original': "y'all've wrapped", 'tokens': 'wrapped', 'score': -0.2579}]
-
-
-
 #Determine the number of sentences in the paragraph
 def maxSentences(Dict):
     numOfSentences = len(Dict)
