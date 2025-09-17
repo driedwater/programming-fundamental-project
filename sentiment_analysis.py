@@ -1,26 +1,31 @@
-def load_afinn_to_dictionary(path: str) -> dict:
-    """
-    load the afinn txt file to python dictionary
+from afinn_loader import get_afinn
 
-    :param path: path to the afinn txt file
-    :returns: afinn txt file in dictionary format
-    """
-    afinn_dict = {}
+# def load_afinn_to_dictionary(path: str) -> dict:
+#     """
+#     load the afinn txt file to python dictionary
+#
+#     :param path: path to the afinn txt file
+#     :returns: afinn txt file in dictionary format
+#     """
+#     afinn_dict = {}
+#
+#     # open the afinn txt file
+#     with open(path, "r") as file:
+#         for line in file:
+#             # each line uses \t to separate the word and word score
+#             # e.g. abandon -2
+#             splitted_line = line.strip().split('\t')
+#             word = splitted_line[0]
+#             score = splitted_line[1]
+#
+#             afinn_dict[word] = int(score)
+#     return afinn_dict
 
-    # open the afinn txt file
-    with open(path, "r") as file:
-        for line in file:
-            # each line uses \t to separate the word and word score 
-            # e.g. abandon -2
-            splitted_line = line.strip().split('\t')
-            word = splitted_line[0]
-            score = splitted_line[1]
 
-            afinn_dict[word] = int(score)
-    return afinn_dict
+def get_sentence_sentiment_score(afinn: dict, sentence: str) -> int:
 
+    afinn = get_afinn()
 
-def get_sentence_sentiment_score(afinn_dict: dict, sentence: str) -> int:
     """
     This function calculates the sentiment score of the sentence inputted by splitting
     each word, check if word exist in afinn_dict then adding up the score and dividing by
@@ -34,13 +39,13 @@ def get_sentence_sentiment_score(afinn_dict: dict, sentence: str) -> int:
     score = 0
     sentence_word_list = sentence.split(" ")
     sentence_word_count = len(sentence_word_list)
-    afinn_words_list = list(afinn_dict.keys())
+    afinn_words_list = list(afinn.keys())
 
     for word in sentence_word_list:
         found = binary_search(afinn_words_list, word)
 
         if found:
-            score += afinn_dict[word]
+            score += afinn[word]
 
     final_score = round(score / sentence_word_count, 5)
 
@@ -101,7 +106,7 @@ def compute_all_sentences(sentences_list: list[dict]) -> list[dict]:
     :params sentences_list: the list of dictionaries containing the sentences used to compute the sentiment score 
     :returns: the same list[dict] but with scoring in each dictionary
     """
-    afinn = load_afinn_to_dictionary("AFINN-en-165.txt")
+    afinn = get_afinn()
     score_list = []
 
     for sentence_dict in sentences_list:
