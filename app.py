@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from tokenizer import complete_tokenization
+from preprocessing import complete_tokenization
 from sentiment_analysis import compute_all_sentences
 from SentimentAnalysis_C import most_positive_sentence, most_negative_sentence
 from SlidingWindow import sliding_window
