@@ -3,9 +3,19 @@ import unicodedata2
 import re
 import nltk
 import os
-from nltk.corpus import stopwords
+
+from nltk import WordNetLemmatizer
+from nltk.corpus import stopwords, wordnet
 from nltk.tokenize.toktok import ToktokTokenizer
 from contractions import CONTRACTION_MAP
+from afinn_loader import get_afinn
+
+# Download nltk packages required from the preprocesses
+nltk.download("punkt", quiet=True)
+nltk.download("averaged_perceptron_tagger_eng", quiet=True)
+nltk.download("wordnet", quiet=True)
+nltk.download("omw-1.4", quiet=True)
+nltk.download('stopwords', quiet=True)
 
 # Build a regex pattern to match contractions (using the contraction mapping in contractions.py):
 # 1. Escape special characters in each contraction (like ' in y'all).
@@ -17,35 +27,50 @@ CONTRACTION_PATTERN = re.compile(r'(' + '|'.join(sorted(map(re.escape, CONTRACTI
 #ToktokTokenizer from nltk
 tokenizer = ToktokTokenizer()
 
-def save_stopwords(filepath="stopwords.txt", afinn_path="AFINN-en-165.txt"):
-    """
-    Create a local file stopwords.txt, that saves NLTK stopwords to a file,
-    excluding any words that:
-    1) appears as a single word in the Afinn lexicon
-    2) appears as a multi-word phrase in the Afinn lexicon
-    (Basically excludes all words in the Afinn lexicon)
-    """
+# def save_stopwords(filepath="stopwords.txt", afinn_path="AFINN-en-165.txt"):
+#
+#     """
+#     Create a local file stopwords.txt, that saves NLTK stopwords to a file,
+#     excluding any words that:
+#     1) appears as a single word in the Afinn lexicon
+#     2) appears as a multi-word phrase in the Afinn lexicon
+#     (Basically excludes all words in the Afinn lexicon)
+#     """
+#
+#     # Download and load nltk english stopwords
+#     stopwords_set = set(stopwords.words("english"))
+#
+#     # Collect all Afinn words (both single and multi-word parts)
+#     with open(afinn_path, "r", encoding="utf-8") as f:
+#         afinn_words = {
+#             word
+#             for line in f
+#             # Take the part before the tab
+#             # Split multi-word phrases into single words
+#             for word in line.split("\t")[0].split()
+#         }
+#
+#     # Keep only nltk stopwords not found in Afinn
+#     filtered = stopwords_set - afinn_words
+#
+#     # Write stopwords to file
+#     with open(filepath, "w", encoding="utf-8") as f:
+#         f.write("\n".join(sorted(filtered)))
 
-    # Download and load nltk english stopwords
-    nltk.download('stopwords')
+def save_stopwords(filepath="stopwords.txt"):
+
     stopwords_set = set(stopwords.words("english"))
 
-    # Collect all Afinn words (both single and multi-word parts)
-    with open(afinn_path, "r", encoding="utf-8") as f:
-        afinn_words = {
-            word
-            for line in f
-            # Take the part before the tab
-            # Split multi-word phrases into single words
-            for word in line.split("\t")[0].split()
-        }
+    afinn = get_afinn()  # dict[str, int]
+    # Split multi-word phrases into individual words
+    afinn_words = set()
+    for term in afinn.keys():
+        afinn_words.update(term.split())
 
-    # Keep only nltk stopwords not found in Afinn
     filtered = stopwords_set - afinn_words
-
-    # Write stopwords to file
     with open(filepath, "w", encoding="utf-8") as f:
         f.write("\n".join(sorted(filtered)))
+
 
 def load_stopwords(filepath="stopwords.txt"):
     # Create stopwords.txt if filepath does not exist
@@ -107,6 +132,59 @@ def convert_contractions(text):
     # Go through text and find a match, then call replace_contractions function
     return CONTRACTION_PATTERN.sub(replace_contractions, text)
 
+#Tagging to discover if the word is an adjective, verb, noun or adverb
+def get_wordnet_pos(tag):
+    if tag.startswith("J"):
+        return wordnet.ADJ
+    elif tag.startswith("V"):
+        return wordnet.VERB
+    elif tag.startswith("N"):
+        return wordnet.NOUN
+    elif tag.startswith("R"):
+        return wordnet.ADV
+    else:
+        return wordnet.NOUN
+
+# Lemmatization (reduces word to its dictionary form, e.g., "running" -> "run")
+def lemmatize_text(text):
+
+    afinn = get_afinn()
+
+    #Create WordNet lemmatizer instance
+    lemmatizer = WordNetLemmatizer()
+
+    text = text.split()
+
+    #Tagging the words
+    pos_tags=nltk.pos_tag(text)
+
+    #Lemmatizing
+    lemmas = []
+    for word, tag in pos_tags:
+        # Map POS tag to WordNet's expected tag set
+        wn_pos = get_wordnet_pos(tag)
+
+        #Lemmatizing the word
+        lemma = lemmatizer.lemmatize(word, pos=wn_pos)
+
+
+        #Prefer form that exists in the AFINN Dictionary
+        if word in afinn:
+            lemmas.append(word)
+
+        elif lemma in afinn:
+            lemmas.append(lemma)
+
+        else:
+            lemmas.append(lemma)
+
+
+     # Join all processed tokens back into a single space-separated string
+    text = " ".join(lemmas)
+
+    # Return the lemmatized and filtered string
+    return text
+
 def complete_tokenization(text):
     # Splits paragraphs on <br /><br />
     # Removes any leading or trailing whitespaces
@@ -135,6 +213,8 @@ def complete_tokenization(text):
             text = remove_special_characters(text)
             # Remove stopwords
             text = remove_stopwords(text)
+            # Lemmatize Text
+            text = lemmatize_text(text)
 
             hierarchical_tokens.append({
                 "para": p,
@@ -146,7 +226,7 @@ def complete_tokenization(text):
     return  hierarchical_tokens
 
 if __name__ == "__main__":
-    sample_text = "***who now??? :D**** whom Our <p></p> NOT GOOD éXpéctéd<br /><br /> Must've needn't. needn wouldn't <br /><br /> ourselves you ya'll. meow y'all're <br /><br /> y'all've wrapped"
+    sample_text = "boring dogs"
     # sample_text.islower()
     # sample_text = """
     # ***May Contain Spoilers*** OK, it wasn't exactly as good as expected in fact it was a lot different than I had thought it would be but it still turned out to be a pretty good movie.<br /><br />I usually don't care too much for that type of music but in this movie it worked perfectly (I mean duh he's a rock star) but anyway I loved Stuart Townsend in this, and Aaliyah, although she had a small part in the movie was amazing.<br /><br />And even though Tom Cruise played Lestat in the Interview with a Vampire, I have to admit that I am glad he turned down the role even though I normally hate when they use different people to play the same characters in like sequels and stuff.<br /><br />Overall, the movie was great and I enjoyed watching it, even if there were parts that could have been better. Great vampire movie.
