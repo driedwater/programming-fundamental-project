@@ -22,10 +22,7 @@ from afinn_loader import get_afinn
 #     return afinn_dict
 
 
-def get_sentence_sentiment_score(afinn: dict, sentence: str) -> int:
-
-    afinn = get_afinn()
-
+def get_sentence_sentiment_score(afinn: dict, tokenized_sentence: dict) -> int:
     """
     This function calculates the sentiment score of the sentence inputted by splitting
     each word, check if word exist in afinn_dict then adding up the score and dividing by
@@ -36,21 +33,24 @@ def get_sentence_sentiment_score(afinn: dict, sentence: str) -> int:
     :param sentence: the sentence we want to find the sentiment score of
     :returns: sentiment score of the sentence
     """
+    
     score = 0
-    sentence_word_list = sentence.split(" ")
-    sentence_word_count = len(sentence_word_list)
+    sentence_word_count = len(tokenized_sentence)
     afinn_words_list = list(afinn.keys())
 
-    for word in sentence_word_list:
+    for word in tokenized_sentence:
         found = binary_search(afinn_words_list, word)
 
         if found:
             score += afinn[word]
-
-    final_score = round(score / sentence_word_count, 5)
+    
+    if sentence_word_count == 0:
+        score = 0
+    else:
+        score = round(score / sentence_word_count, 5)
 
     # rescale score so that the max range is -1 to 1 instead of -5 to 5
-    rescaled_score = final_score / 5
+    rescaled_score = score / 5
 
     return rescaled_score
 
@@ -111,6 +111,7 @@ def compute_all_sentences(sentences_list: list[dict]) -> list[dict]:
 
     for sentence_dict in sentences_list:
         tokenized_sentence = sentence_dict['tokens']
+        print(tokenized_sentence)
 
         score = get_sentence_sentiment_score(afinn, tokenized_sentence)
         score_list.append(score)
@@ -118,3 +119,9 @@ def compute_all_sentences(sentences_list: list[dict]) -> list[dict]:
     modified_dict = add_score_to_dict(sentences_list, score_list)
 
     return modified_dict
+
+
+if __name__ == "__main__":
+    sentences = [{'para': 1, 'sentence': 1, 'original': "***May Contain Spoilers*** OK, it wasn't exactly as good as expected in fact it was a lot different than I had thought it would be but it still turned out to be a pretty good movie.", 'tokens': 'may contain spoilers ok not exactly good expected in fact lot different thought would still turned pretty good movie'}, {'para': 2, 'sentence': 1, 'original': "I usually don't care too much for that type of music but in this movie it worked perfectly (I mean duh he's a rock star) but anyway I loved Stuart Townsend in this, and Aaliyah, although she had a small part in the movie was amazing.", 'tokens': ['usually', 'not', 'care', 'much', 'type', 'of', 'music', 'in', 'movie', 'worked', 'perfectly', 'mean', 'duh', 'rock', 'star', 'anyway', 'loved', 'stuart', 'townsend', 'in', 'aaliyah', 'although', 'small', 'part', 'in', 'movie', 'amazing']}, 
+    {'para': 2, 'sentence': 1, 'original': ",,,", 'tokens': []}]
+    print(compute_all_sentences(sentences))
