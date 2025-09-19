@@ -24,10 +24,11 @@ def index():
             try:
                 content = file.read().decode("utf-8")
                 tokens = complete_tokenization(content)
-                print(compute_all_sentences(tokens))
-                print(most_positive_sentence(compute_all_sentences(tokens)))
-                print(most_negative_sentence(compute_all_sentences(tokens)))
-                print(sliding_window(compute_all_sentences(tokens),1))
+                print(tokens)
+                sentences_dict = compute_all_sentences(tokens)
+                print(most_positive_sentence(sentences_dict))
+                print(most_negative_sentence(sentences_dict))
+                print(sliding_window(sentences_dict, 1))
             # Added try except to handle decoding errors (tested with corrupt .txt file)
             except Exception:
                 message = "Error reading file. Make sure it's a valid text file."

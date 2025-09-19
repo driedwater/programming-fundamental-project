@@ -10,19 +10,26 @@ def sliding(Dictionary, para_number):
     try:
         #Check that there is a 3rd sentence in the text
         while sentence_para+2 < maxSentences(Dictionary):
+            # first, second and third refers to the 
+            # first, second and third element in the sliding window
+            first = Dictionary[sentence_para]
+            second = Dictionary[sentence_para + 1]
+            third = Dictionary[sentence_para + 2]
+            
             #Move window by 1 to the next sentence if any of the 3 sentences in the current window is blank
-            if Dictionary[sentence_para]["tokens"] == "" or Dictionary[sentence_para + 1]["tokens"] == "" or \
-            Dictionary[sentence_para + 2]["tokens"] == "":
+            if (first["tokens"] == [] or 
+                second["tokens"] == [] or 
+                third["tokens"] ==[]):
+
                 sentence_para+=1
 
             #Checks if all 3 sentences are in the same paragraph
-            elif Dictionary[sentence_para]["para"] == para_number and Dictionary[sentence_para+1]["para"] == para_number and Dictionary[sentence_para+2]["para"] == para_number:
-                tempScore = Dictionary[sentence_para]["score"] + Dictionary[sentence_para + 1]["score"] + \
-                        Dictionary[sentence_para + 2]["score"]
-                sentenceSegment = Dictionary[sentence_para]["original"] + " " + Dictionary[sentence_para + 1]["original"] + " " + \
-                              Dictionary[sentence_para + 2]["original"]
-                # sentenceSegment = Dictionary[sentence_para]["tokens"] + " " + Dictionary[sentence_para + 1]["tokens"] + " " + \
-                #               Dictionary[sentence_para + 2]["tokens"]
+            elif (first["para"] == para_number and 
+                  second["para"] == para_number and 
+                  third["para"] == para_number):
+                tempScore = first["score"] + second["score"] + third["score"]
+
+                sentenceSegment = first["original"] + " " + second["original"] + " " + third["original"]
                 #Add the sentences and total score in the current segment to a temporary list
                 slidingWindowScore.append([sentenceSegment, tempScore])
                 #Move to the next sentence
@@ -47,8 +54,10 @@ def positive_paragraph_segment(window_score):
     #Retrieve the highest sentiment score from the list of segments and their scores
     most_positive_score = max(item[1] for item in window_score)
     #Retrieve the sentence in the segment that has the highest score
-    most_positive_segment = [sublist[0] for sublist in window_score if
-                             len(sublist) > 1 and sublist[1] == most_positive_score]
+    #most_positive_segment = [sublist[0] for sublist in window_score if
+    #                         len(sublist) > 1 and sublist[1] == most_positive_score]
+    most_positive_segment = [item[0] for item in window_score 
+                             if item[1] == most_positive_score]
     return most_positive_segment, most_positive_score
 
 #Identify the segment with the lowest sentiment score and the sentences in the segment
@@ -56,7 +65,9 @@ def negative_paragraph_segment(window_score):
     #Retrieve the lowest sentiment score from the list of segments and their scores
     most_negative_score = min(item[1] for item in window_score)
     #Retrieve the sentences in the segment that has the lowest score
-    most_negative_segment = [sublist[0] for sublist in window_score if len(sublist) > 1 and sublist[1] == most_negative_score]
+    #most_negative_segment = [sublist[0] for sublist in window_score if len(sublist) > 1 and sublist[1] == most_negative_score]
+    most_negative_segment = [item[0] for item in window_score 
+                             if item[1] == most_negative_score]
     return most_negative_segment, most_negative_score
 
 
@@ -70,4 +81,3 @@ def sliding_window(Dictionary, para):
         positive_seg, positive_score = positive_paragraph_segment(result)
         negative_seg, negative_score = negative_paragraph_segment(result)
         return f'Most positive segment: {"; ".join(positive_seg)}\nMost positive segment score: {positive_score}\nMost negative segment: {"; ".join(negative_seg)}\nMost negative segment score: {negative_score}'
-
