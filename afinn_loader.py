@@ -22,8 +22,10 @@ def _parse_afinn(text) -> dict:
         afinn_dict[word] = int(score)
     return afinn_dict
 
+
 # Caches the afinn lexicon so it can be reused
 @lru_cache(maxsize=1)
+
 
 def get_afinn() -> dict:
     with _lock:    #Prevents multiple threads to call this simultaneously
