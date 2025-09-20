@@ -6,3 +6,4 @@ nltk~=3.9.1
 bs4~=0.0.2
 unicodedata2~=16.0.0
 regex~=2025.9.1
+plotly~=6.3.0
