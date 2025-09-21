@@ -44,7 +44,7 @@ def results():
 
     most_positive = most_positive_sentence(sentences_dict)
     most_negative = most_negative_sentence(sentences_dict)
-    positive_para, negative_para = sliding_window(sentences_dict, 1)
+    positive_para, negative_para = sliding_window(sentences_dict)
 
     return render_template(
         "display.html",
