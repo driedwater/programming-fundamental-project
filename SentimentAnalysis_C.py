@@ -23,6 +23,7 @@ def most_positive_sentence(Dictionary: list[dict]) -> tuple[float, str]:
     # Return insufficient sentence to determine score if tokenized sentence is blank/None
     if max_score is None:
         return "Insufficient sentences available"
+    
     return [max_score, max_line]
 
 

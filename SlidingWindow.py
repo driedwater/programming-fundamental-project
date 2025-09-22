@@ -1,4 +1,4 @@
-# Determine the number of sentences in the paragraph
+# Determine the number of sentences in the text
 def max_sentences(Dict: list[dict]) -> int:
     num_of_sentences = len(Dict)
 
@@ -25,7 +25,6 @@ def sliding(Dictionary: list[dict]) -> list[tuple[str, float]] | None:
             if (first["tokens"] == [] or 
                 second["tokens"] == [] or 
                 third["tokens"] ==[]):
-
                 sentence_para+=1
 
             # Ensures that all 3 sentences are from the same paragraph
@@ -64,6 +63,7 @@ def positive_paragraph_segment(window_score: list[list]) -> list[tuple[list[str]
     # Retrieve the sentence in the segment that has the highest score
     most_positive_segment = [segment[0] for segment in window_score 
                              if segment[1] == most_positive_score]
+    
     return [most_positive_segment, most_positive_score]
 
 
@@ -88,5 +88,6 @@ def sliding_window(Dictionary: list[dict]) -> list[list[list[str], float]] :
         # Print most positive and negative segment and score
         positive_seg_score = positive_paragraph_segment(result)
         negative_seg_score = negative_paragraph_segment(result)
-        return [positive_seg_score, negative_seg_score]
+
         #return f'Most positive segment: {"; ".join(positive_seg)}\nMost positive segment score: {positive_score}\nMost negative segment: {"; ".join(negative_seg)}\nMost negative segment score: {negative_score}'
+        return [positive_seg_score, negative_seg_score]
