@@ -44,7 +44,18 @@ def results():
 
     most_positive = most_positive_sentence(sentences_dict)
     most_negative = most_negative_sentence(sentences_dict)
-    positive_para, negative_para = sliding_window(sentences_dict)
+    sw_result = sliding_window(sentences_dict)
+
+    if isinstance(sw_result, str):
+        # Error case: not enough sentences
+        pos_extract = neg_extract = sw_result
+        pos_extract_fig = neg_extract_fig = ""  # Don't render gauge chart
+    else:
+        positive_para, negative_para = sw_result
+        pos_extract = " ".join(positive_para[0])
+        neg_extract = " ".join(negative_para[0])
+        pos_extract_fig = pos_extract_figure(positive_para[1])
+        neg_extract_fig = neg_extract_figure(negative_para[1])
 
     return render_template(
         "display.html",
@@ -52,10 +63,10 @@ def results():
         neg_sentence=most_negative[1],
         pos_fig=pos_figure(most_positive[0]),
         neg_fig=neg_figure(most_negative[0]),
-        pos_extract_fig=pos_extract_figure(positive_para[1]),
-        pos_extract=" ".join(positive_para[0]),
-        neg_extract_fig=neg_extract_figure(negative_para[1]),
-        neg_extract=" ".join(negative_para[0])
+        pos_extract_fig=pos_extract_fig,
+        pos_extract=pos_extract,
+        neg_extract_fig=neg_extract_fig,
+        neg_extract=neg_extract,
     )
 
 if __name__ == "__main__":
