@@ -1,0 +1,18 @@
+h2 {
+    font-size: 24px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.sentiment-text {
+    width: 50%;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 20px;
+    padding: 20px;
+    border: none;
+    background-color: #dddddd;
+    resize: vertical; /* allow vertical resize */
+    overflow-wrap: break-word; /* break long words */
+    white-space: pre-wrap; /* preserve whitespace and wrap text */
+    min-height: 100px; /* minimum height */
+    box-sizing: border-box; /* include padding in width */
+}
