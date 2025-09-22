@@ -53,9 +53,9 @@ def results():
         pos_fig=pos_figure(most_positive[0]),
         neg_fig=neg_figure(most_negative[0]),
         pos_extract_fig=pos_extract_figure(positive_para[1]),
-        pos_extract=positive_para[0],
+        pos_extract=" ".join(positive_para[0]),
         neg_extract_fig=neg_extract_figure(negative_para[1]),
-        neg_extract=negative_para[0]
+        neg_extract=" ".join(negative_para[0])
     )
 
 if __name__ == "__main__":
