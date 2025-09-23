@@ -78,7 +78,7 @@ def negative_paragraph_segment(window_score: list[list]) -> list[tuple[list[str]
     return [most_negative_segment, most_negative_score]
 
 
-def sliding_window(Dictionary: list[dict]) -> list[tuple[list[str], float]]:
+def sliding_window(Dictionary: list[dict]) -> list[tuple[list[str], float]] | str:
     result = sliding(Dictionary)
     if result is None:
         # No segment calculated due to insuffient sentences in the window
