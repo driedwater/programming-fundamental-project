@@ -10,7 +10,7 @@ REMOTE_AFINN_URL = "https://raw.githubusercontent.com/fnielsen/afinn/master/afin
 _lock = threading.Lock()
 
 #Returns the afinn txt file in dictionary format
-def _parse_afinn(text) -> dict:
+def _parse_afinn(text: str) -> dict[str, int]:
     afinn_dict = {}
     for line in text.splitlines():
         # each line uses \t to separate the word and word score
@@ -27,7 +27,7 @@ def _parse_afinn(text) -> dict:
 @lru_cache(maxsize=1)
 
 
-def get_afinn() -> dict:
+def get_afinn() -> dict[str, int]:
     with _lock:    #Prevents multiple threads to call this simultaneously
 
         #Uses the locally stored afinn file first
