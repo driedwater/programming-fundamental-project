@@ -6,6 +6,7 @@ from sentiment_analysis import compute_all_sentences
 from SentimentAnalysis_C import most_positive_sentence, most_negative_sentence
 from SlidingWindow import sliding_window
 from chart import pos_figure,neg_figure,pos_extract_figure,neg_extract_figure
+from spacing import load_word_costs, smart_segment
 
 app = Flask(__name__)
 
@@ -26,7 +27,15 @@ def index():
             # Reading file content directly without saving locally
             try:
                 content = file.read().decode("utf-8")
+                print("origin:", content)
+                # Part of project requirements, checks strictly for strings with no spaces
+                if " " not in content.strip():
+                    word_cost, maxword = load_word_costs("unigram_freq.csv")
+                    content = smart_segment(content, word_cost, maxword)
+                    print("spacy:", content)
+
                 tokens = complete_tokenization(content)
+                print("tokens", tokens)
                 sentences_dict = compute_all_sentences(tokens)
                 json_data = json.dumps(sentences_dict)
 
