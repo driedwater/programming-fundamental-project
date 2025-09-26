@@ -252,19 +252,6 @@ def complete_tokenization(
     return  hierarchical_tokens
 
 
-if __name__ == "__main__":
-    sample_text = "movie not good phone does not work anymore bad luck today say fucking amazing cover-up story shocking self-confident cannot stand behavior dont like idea 0 1 2 3 4 5 6 7 8 9 10 10/10"
-    #sample_text = ")***who now??? :D**** boring 10/10 dogs studies cats whom Our <p>Y'all</p> NOT GOOD éXpéctéd<br /><br /><br /><br /> Must've needn't. needn wouldn't <br /><br /> ourselves you ya'll. meow y'all're <br /><br /> y'all've wrapped"
-    # sample_text = """
-    # ***May Contain Spoilers*** OK, it wasn't exactly as good as expected in fact it was a lot different than I had thought it would be but it still turned out to be a pretty good movie.<br /><br />I usually don't care too much for that type of music but in this movie it worked perfectly (I mean duh he's a rock star) but anyway I loved Stuart Townsend in this, and Aaliyah, although she had a small part in the movie was amazing.<br /><br />And even though Tom Cruise played Lestat in the Interview with a Vampire, I have to admit that I am glad he turned down the role even though I normally hate when they use different people to play the same characters in like sequels and stuff.<br /><br />Overall, the movie was great and I enjoyed watching it, even if there were parts that could have been better. Great vampire movie.
-    # """
-    import time
-    from pprint import pprint
-    result = complete_tokenization(sample_text)
-    print(time.time())
-    pprint(result)
-
-
 
 
 
