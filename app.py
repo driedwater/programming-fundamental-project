@@ -6,6 +6,7 @@ from sentiment_analysis import compute_all_sentences
 from SentimentAnalysis_C import most_positive_sentence, most_negative_sentence
 from SlidingWindow import sliding_window
 from chart import pos_figure,neg_figure,pos_extract_figure,neg_extract_figure
+from SlidingWindow2 import sliding_window_2
 
 app = Flask(__name__)
 
@@ -28,6 +29,8 @@ def index():
                 content = file.read().decode("utf-8")
                 tokens = complete_tokenization(content)
                 sentences_dict = compute_all_sentences(tokens)
+                print(sentences_dict)
+                print(sliding_window_2(sentences_dict))
                 json_data = json.dumps(sentences_dict)
 
                 return redirect(url_for("results", json_data=json_data))
