@@ -30,6 +30,11 @@ def sliding_window_2(Dictionary: list[dict] )-> list[list[dict[str, float | str]
             while line_pos < length and Dictionary[line_pos]['para'] == para_number:
                 current_score =  Dictionary[line_pos]["score"]
 
+                # If token is blank then skip to the next line and start from the current while loop again
+                if not Dictionary[line_pos]["tokens"]:
+                    line_pos += 1
+                    continue
+
                 #Max scoring logic:
                 #If existing scoring is negative then there is no need to add the current score because it will make it more negative
                 # negative + negative = negative, negative+positive = negative
