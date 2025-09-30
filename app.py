@@ -8,6 +8,8 @@ from SlidingWindow import sliding_window
 from chart import pos_figure,neg_figure,pos_extract_figure,neg_extract_figure
 from SlidingWindow2 import sliding_window_2
 
+from spacing import load_word_costs, smart_segment
+
 app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST"])
@@ -27,6 +29,13 @@ def index():
             # Reading file content directly without saving locally
             try:
                 content = file.read().decode("utf-8")
+                print("origin:", content)
+                # Part of project requirements, checks strictly for strings with no spaces
+                if " " not in content.strip():
+                    word_cost, maxword = load_word_costs("unigram_freq.csv")
+                    content = smart_segment(content, word_cost, maxword)
+                    print("spacy:", content)
+
                 tokens = complete_tokenization(content)
                 sentences_dict = compute_all_sentences(tokens)
                 print(sentences_dict)
