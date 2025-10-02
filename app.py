@@ -4,10 +4,9 @@ from flask import Flask, render_template, request, redirect, url_for
 from preprocessing import complete_tokenization
 from sentiment_analysis import compute_all_sentences
 from SentimentAnalysis_C import most_positive_sentence, most_negative_sentence
-from SlidingWindow import sliding_window
 from chart import pos_figure,neg_figure,pos_extract_figure,neg_extract_figure
 from SlidingWindow2 import sliding_window_2
-
+import urllib.parse
 from spacing import load_word_costs, smart_segment
 
 app = Flask(__name__)
@@ -38,39 +37,45 @@ def index():
 
                 tokens = complete_tokenization(content)
                 sentences_dict = compute_all_sentences(tokens)
-                print(sentences_dict)
-                print(sliding_window_2(sentences_dict))
                 json_data = json.dumps(sentences_dict)
-
-                return redirect(url_for("results", json_data=json_data))
+                # Encode content for URL
+                encoded_content = urllib.parse.quote(content)
+                return redirect(url_for("results", json_data=json_data, file_content=encoded_content))
             # Added try except to handle decoding errors (tested with corrupt .txt file)
             except Exception:
                 message = "Error reading file. Make sure it's a valid text file."
 
     return render_template("index.html", message=message, content=content)
 
-@app.route('/display')
+@app.route('/results')
 def results():
     json_data = request.args.get("json_data")
+    file_content = request.args.get("file_content", "")
+    # Decode content from URL
+    file_content = urllib.parse.unquote(file_content)
     sentences_dict = json.loads(json_data)
-
     most_positive = most_positive_sentence(sentences_dict)
     most_negative = most_negative_sentence(sentences_dict)
-    sw_result = sliding_window(sentences_dict)
+    sw_result = sliding_window_2(sentences_dict)
 
-    if isinstance(sw_result, str):
-        # Error case: not enough sentences
-        pos_extract = neg_extract = sw_result
-        pos_extract_fig = neg_extract_fig = ""  # Don't render gauge chart
+    if not sw_result:
+        # Error case: sw_result contains empty dictionary or empty list
+        # Display error message for pos_extract and neg_extract instead of the sentence
+        pos_extract = neg_extract = "Unable to calculate sliding window"
     else:
-        positive_para, negative_para = sw_result
-        pos_extract = " ".join(positive_para[0])
-        neg_extract = " ".join(negative_para[0])
-        pos_extract_fig = pos_extract_figure(positive_para[1])
-        neg_extract_fig = neg_extract_figure(negative_para[1])
+        max_segments, min_segments = sw_result
+        # Get the longest sentence from paragraph extract if there's more than 1 sentence with the same sentiment score
+        most_positive_dict = max(max_segments, key=lambda d: len(d["sentence"])) if max_segments else {"sentence": "", "score": 0}
+        most_negative_dict = max(min_segments, key=lambda d: len(d["sentence"])) if min_segments else {"sentence": "", "score": 0}
+        pos_extract = most_positive_dict["sentence"]
+        neg_extract = most_negative_dict["sentence"]
+        # only render chart when a score is given
+        pos_extract_fig = pos_extract_figure(most_positive_dict["score"])
+        neg_extract_fig = neg_extract_figure(most_negative_dict["score"])
 
     return render_template(
-        "display.html",
+        "results.html",
+        entire_text=file_content,
         pos_sentence=most_positive[1],
         neg_sentence=most_negative[1],
         pos_fig=pos_figure(most_positive[0]),
