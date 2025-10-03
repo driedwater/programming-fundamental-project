@@ -4,9 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sentiment Analysis</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='display.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='results.css') }}">
 </head>
 <body>
+    <h2> Entire text: </h2>
+    <textarea readonly class="sentiment-text">{{ entire_text }}</textarea>
+    <br>
     <h2>Most positive sentence:</h2>
     <textarea readonly class="sentiment-text">{{ pos_sentence }}</textarea>
     {{ pos_fig | safe }}
@@ -16,11 +19,11 @@
     {{ neg_fig | safe }}
 
     <h2>Most positive paragraph extract:</h2>
-    <textarea readonly class="sentiment-text">{{ pos_extract }}</textarea>
+    <textarea readonly class="sentiment-text">{{ pos_extract | safe}}</textarea>
     {{ pos_extract_fig | safe }}
 
     <h2>Most negative paragraph extract:</h2>
-    <textarea readonly class="sentiment-text">{{ neg_extract }}</textarea>
+    <textarea readonly class="sentiment-text">{{ neg_extract | safe }}</textarea>
     {{ neg_extract_fig | safe }}
 </body>
 </html>
