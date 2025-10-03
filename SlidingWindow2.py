@@ -3,7 +3,7 @@ def max_sentences(Dict: list[dict]) -> int:
     return num_of_sentences
 
 
-def sliding_window_2(Dictionary: list[dict] )-> list[list[dict[str, float | str]]]:
+def sliding_window_2(Dictionary: list[dict] )-> list[list[dict[str, float]]] | str:
     para_pos = 0
     max_segments = []
     min_segments = []
