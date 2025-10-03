@@ -17,7 +17,8 @@
     <h2>Most negative sentence:</h2>
     <textarea readonly class="sentiment-text">{{ neg_sentence }}</textarea>
     {{ neg_fig | safe }}
-
+    
+    <h2> Sliding Window 1</h2>
     <h2>Most positive paragraph extract:</h2>
     <textarea readonly class="sentiment-text">{{ pos_extract | safe}}</textarea>
     {{ pos_extract_fig | safe }}
@@ -25,5 +26,14 @@
     <h2>Most negative paragraph extract:</h2>
     <textarea readonly class="sentiment-text">{{ neg_extract | safe }}</textarea>
     {{ neg_extract_fig | safe }}
+
+    <h2>Sliding Window 2</h2>
+    <h2>Most positive paragraph extract:</h2>
+    <textarea readonly class="sentiment-text">{{ pos_extract2 | safe}}</textarea>
+    {{ pos_extract_fig2 | safe }}
+
+    <h2>Most negative paragraph extract:</h2>
+    <textarea readonly class="sentiment-text">{{ neg_extract2 | safe }}</textarea>
+    {{ neg_extract_fig2| safe }}
 </body>
 </html>
