@@ -35,11 +35,13 @@ def sliding_window_2(Dictionary: list[dict] )-> list[list[dict[str, float | str]
                     line_pos += 1
                     continue
 
-                #Max scoring logic:
-                #If existing scoring is negative then there is no need to add the current score because it will make it more negative
-                # negative + negative = negative, negative+positive = negative
-                #To ensure maxtempscore > maxtempscore+current e.g. 3 > 3+(-4) = 3 >-1 true, else -2 < -2+1 = -2 > 1 false
-                #If maxtempscore+current < maxtempscore then we do not want to add the negative score
+                '''
+                Max scoring logic:
+                If existing scoring is negative then there is no need to add the current score because it will make it more negative
+                negative + negative = negative, negative+positive = negative
+                To ensure maxtempscore > maxtempscore+current e.g. 3 > 3+(-4) = 3 >-1 true, else -2 < -2+1 = -2 > 1 false
+                If maxtempscore+current < maxtempscore then we do not want to add the negative score
+                '''
                 if max_temp_score < 0:
                     max_temp_score = current_score
                     max_start = line_pos
@@ -63,9 +65,11 @@ def sliding_window_2(Dictionary: list[dict] )-> list[list[dict[str, float | str]
                         'score': max_temp_score
                     })
 
-                #Min scoring logic:
-                #If positive min temp score is added to the current score it will cause it to be more positive
-                # If mintempscore+current > mintempscore then we do not want to add the positive score
+                '''
+                Min scoring logic:
+                If positive min temp score is added to the current score it will cause it to be more positive
+                If mintempscore+current > mintempscore then we do not want to add the positive score
+                '''
                 if min_temp_score > 0 :
                     min_temp_score = current_score
                     min_start = line_pos
