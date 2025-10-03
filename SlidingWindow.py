@@ -82,7 +82,7 @@ def sliding_window(Dictionary: list[dict]) -> list[tuple[list[str], float]] | st
     result = sliding(Dictionary)
     if result is None:
         # No segment calculated due to insuffient sentences in the window
-        return "Insufficient sentences for sliding window."
+        return "Unable to calculate sliding window"
     
     else:
         # Print most positive and negative segment and score
