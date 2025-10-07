@@ -11,6 +11,20 @@ _lock = threading.Lock()
 
 #Returns the afinn txt file in dictionary format
 def _parse_afinn(text: str) -> dict[str, int]:
+    """
+    Parse raw AFINN lexicon text into a dictionary.
+
+    Each line is expected to contain a word and its sentiment score separated
+    by a tab. Lines are split and converted into a mapping of the form
+    ``{word: score}``.
+
+    :param text: Raw contents of an AFINN lexicon file.
+    :type text: str
+
+    :return: A dictionary mapping words to their integer sentiment scores.
+    :rtype: dict[str, int]
+    """
+
     afinn_dict = {}
     for line in text.splitlines():
         # each line uses \t to separate the word and word score
@@ -28,7 +42,25 @@ def _parse_afinn(text: str) -> dict[str, int]:
 
 
 def get_afinn() -> dict[str, int]:
-    with _lock:    #Prevents multiple threads to call this simultaneously
+    """
+    Retrieve the AFINN sentiment lexicon as a dictionary.
+
+    The function checks for a locally stored AFINN file first. If the file is
+    available, it is parsed and returned. If it is missing, the lexicon is
+    downloaded from the remote URL, saved locally for future use, and then
+    parsed.
+
+    Thread safety is maintained with a lock to prevent multiple threads from
+    attempting to read or download the file simultaneously. The parsed result
+    is cached via ``functools.lru_cache`` to avoid repeated parsing.
+
+    :return: A dictionary mapping words to their integer sentiment scores.
+    :rtype: dict[str, int]
+
+    :raises requests.HTTPError: If the remote AFINN URL cannot be retrieved successfully.
+    """
+    # Prevents multiple threads to call this simultaneously
+    with _lock:
 
         #Uses the locally stored afinn file first
         if LOCAL_AFINN_PATH.exists():

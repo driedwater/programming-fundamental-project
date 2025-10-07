@@ -5,12 +5,20 @@ afinn = get_afinn()
 
 def build_multiword_info(afinn: dict[str, int]) -> tuple[dict[str, int], int]:
     """
-        From the AFINN dict, extract only multi-word entries (keys with spaces)
-        and compute the maximum phrase length in tokens.
+    Extract multi-word phrases from an AFINN dictionary and compute
+    the maximum phrase length.
 
-        Returns:
-            multiword_dict: { "not good": -3, "does not work": -2, ... }
-            max_n: int, length of the longest multi-word phrase
+    The function filters entries whose keys contain spaces and collects them
+    into a new dictionary. It also tracks the maximum number of words found
+    in any phrase.
+
+    :param afinn: A dictionary mapping words or phrases to sentiment scores.
+    :type afinn: dict[str, int]
+
+    :return: A tuple containing:
+             - A dictionary of multi-word phrases and their associated scores.
+             - The length of the longest multi-word phrase (in tokens).
+    :rtype: tuple[dict[str, int], int]
     """
     multiword_dict: Dict[str, int] = {}
     max_n = 1
@@ -29,11 +37,31 @@ def fold_multiword_phrases(tokens: list[str],
                            alias_map: Optional[dict[str, str]] = None
                            ) -> tuple[list[str], list[dict]]:
     """
-    Try longest n-grams first. For each candidate phrase, check:
-      - candidate in multiword_dict
-      - alias_map[candidate] in multiword_dict (if alias_map provided)
-    On match, collapse the span into a single phrase token (the canonical form
-    if the alias matched).
+    Fold multi-word phrases into single tokens based on a sentiment dictionary.
+
+    The function attempts to match the longest possible n-gram at each token
+    position (up to ``max_n``). If a candidate phrase is found in the
+    ``multiword_dict`` or matches via an alias in ``alias_map``, it is
+    collapsed into a single token. Unmatched tokens remain unchanged.
+
+    :param tokens: A list of individual word tokens to scan for multi-word matches.
+    :type tokens: list[str]
+
+    :param multiword_dict: A mapping of known multi-word phrases to sentiment scores.
+    :type multiword_dict: dict[str, int]
+
+    :param max_n: The maximum phrase length (in tokens) to consider while matching.
+    :type max_n: int
+
+    :param alias_map: Optional mapping of alternate phrase forms to their canonical
+                      equivalents. Defaults to ``None``.
+    :type alias_map: dict[str, str], optional
+
+    :return: A tuple containing:
+             - A new list of tokens where matched multi-word phrases are collapsed.
+             - A list of dictionaries describing each match with keys:
+               ``term``, ``score``, ``start``, and ``length``.
+    :rtype: tuple[list[str], list[dict]]
     """
     i = 0
     out: List[str] = []
