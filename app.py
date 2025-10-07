@@ -4,7 +4,8 @@ from flask import Flask, render_template, request, redirect, url_for
 from preprocessing import complete_tokenization
 from sentiment_analysis import compute_all_sentences
 from SentimentAnalysis_C import most_positive_sentence, most_negative_sentence
-from chart import pos_figure,neg_figure,pos_extract_figure,neg_extract_figure
+from chart import sentiment_gauge
+from SlidingWindow import sliding_window
 from SlidingWindow2 import sliding_window_2
 import urllib.parse
 from spacing import load_word_costs, smart_segment
@@ -56,34 +57,49 @@ def results():
     sentences_dict = json.loads(json_data)
     most_positive = most_positive_sentence(sentences_dict)
     most_negative = most_negative_sentence(sentences_dict)
-    sw_result = sliding_window_2(sentences_dict)
+    sw_result = sliding_window(sentences_dict)
+    sw2_result = sliding_window_2(sentences_dict)
 
-    if not sw_result:
+    if not sw2_result or not sw_result or not most_positive or not most_negative:
         # Error case: sw_result contains empty dictionary or empty list
         # Display error message for pos_extract and neg_extract instead of the sentence
-        pos_extract = neg_extract = "Unable to calculate sliding window"
+        most_positive, most_negative = "Insufficient sentences available"
+        pos_extract, neg_extract = "Unable to calculate sliding window"
     else:
-        max_segments, min_segments = sw_result
+           
+        #Sliding window 1 (Fixed window size of 3)
+        positive_para, negative_para = sw_result
+        pos_extract = " ".join(positive_para[0])
+        neg_extract = " ".join(negative_para[0])
+        pos_extract_fig = sentiment_gauge(positive_para[1])
+        neg_extract_fig = sentiment_gauge(negative_para[1])
+
+        #Sliding window 2 (No fixed window size)
+        max_segments, min_segments = sw2_result
         # Get the longest sentence from paragraph extract if there's more than 1 sentence with the same sentiment score
         most_positive_dict = max(max_segments, key=lambda d: len(d["sentence"])) if max_segments else {"sentence": "", "score": 0}
         most_negative_dict = max(min_segments, key=lambda d: len(d["sentence"])) if min_segments else {"sentence": "", "score": 0}
-        pos_extract = most_positive_dict["sentence"]
-        neg_extract = most_negative_dict["sentence"]
+        pos_extract2 = most_positive_dict["sentence"]
+        neg_extract2 = most_negative_dict["sentence"]
         # only render chart when a score is given
-        pos_extract_fig = pos_extract_figure(most_positive_dict["score"])
-        neg_extract_fig = neg_extract_figure(most_negative_dict["score"])
+        pos_extract_fig2 = sentiment_gauge(most_positive_dict["score"])
+        neg_extract_fig2 = sentiment_gauge(most_negative_dict["score"])
 
     return render_template(
         "results.html",
         entire_text=file_content,
         pos_sentence=most_positive[1],
         neg_sentence=most_negative[1],
-        pos_fig=pos_figure(most_positive[0]),
-        neg_fig=neg_figure(most_negative[0]),
-        pos_extract_fig=pos_extract_fig,
+        pos_fig=sentiment_gauge(most_positive[0]),
+        neg_fig=sentiment_gauge(most_negative[0]),
         pos_extract=pos_extract,
-        neg_extract_fig=neg_extract_fig,
+        pos_extract_fig=pos_extract_fig,
         neg_extract=neg_extract,
+        neg_extract_fig = neg_extract_fig,
+        pos_extract_fig2=pos_extract_fig2,
+        pos_extract2=pos_extract2,
+        neg_extract_fig2=neg_extract_fig2,
+        neg_extract2=neg_extract2
     )
 
 if __name__ == "__main__":
