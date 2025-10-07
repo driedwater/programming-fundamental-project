@@ -1,6 +1,7 @@
-def max_sentences(Dict: list[dict]) -> int:
-    num_of_sentences = len(Dict)
-    return num_of_sentences
+from SlidingWindow import max_sentences
+# def max_sentences(Dict: list[dict]) -> int:
+#     num_of_sentences = len(Dict)
+#     return num_of_sentences
 
 
 def sliding_window_2(Dictionary: list[dict] )-> list[list[dict[str, float]]] | str:

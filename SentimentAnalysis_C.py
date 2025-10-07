@@ -1,54 +1,32 @@
 # Identify the sentence with the highest sentiment score in the entire text
 def most_positive_sentence(Dictionary: list[dict]) -> tuple[float, str] | str:
-    max_score = float('-inf')
-    for line in Dictionary:
-        original_sentence = line["original"]
-        token_sentence = line["tokens"]
-        current_score = line["score"]
+    try:
+        # Retrieve all the score and skip the sentence if it does not have any tokenized word to be scored
+        score_list=[d['score'] for d in Dictionary if d['tokens'] != ""]
+        max_score = max(score_list)
+        # Retrieve all sentences that have this max score
+        max_sentences=[line['original'] for line in Dictionary if line['score'] == max_score]
+        # Combine the max sentences with \n
+        combined_sentence = '\n'.join(max_sentences)
 
-        # Skip if tokenized sentence is blank, max score will not change
-        if len(token_sentence) == 0:
-            continue
+        return (max_score, combined_sentence)
 
-        # Check if current score is higher than the previous max score
-        elif current_score > max_score:
-            max_score = current_score
-            max_line = original_sentence
-
-        # If there is more than 1 sentence with the highest score then add it to the existing max line
-        elif current_score == max_score:
-            max_line += "\n" + original_sentence
-
-    # Return insufficient sentence to determine score if tokenized sentence is blank
-    if max_score == float('-inf'):
-        return "Insufficient sentences available"
-    
-    return [max_score, max_line]
+    except:
+        return ("Insufficient sentences available")
 
 
 # Identify the sentence with the lowest sentiment score in the entire text
 def most_negative_sentence(Dictionary: list[dict]) -> tuple[float, str] | str:
-    min_score = float('inf')
-    for line in Dictionary:
-        original_sentence = line["original"]
-        token_sentence = line["tokens"]
-        current_score = line["score"]
+    try:
+        # Retrieve all the score and skip the sentence if it does not have any tokenized word to be scored
+        score_list = [d['score'] for d in Dictionary if d['tokens'] != ""]
+        min_score = min(score_list)
+        # Retrieve all sentences that have this min score
+        min_sentences = [line['original'] for line in Dictionary if line['score'] == min_score]
+        # Combine the min sentences with \n
+        combined_min_sentence = '\n'.join(min_sentences)
         
-        # Skip if tokenized sentence is blank, min score will not change
-        if len(token_sentence) == 0:
-            continue
+        return (min_score, combined_min_sentence)
 
-        # Check current score is lower than the previous min score
-        elif current_score < min_score:
-            min_score = current_score
-            min_line = original_sentence
-
-        # If there is more than 1 sentence with the lowest score then add it to the existing min line
-        elif current_score == min_score:
-            min_line += "\n" + original_sentence
-
-    # Return insufficient sentence to determine score if tokenized sentence is blank
-    if min_score == float('inf'):
-        return "Insufficient sentences available"
-    
-    return [min_score, min_line]
+    except:
+        return ("Insufficient sentences available")
