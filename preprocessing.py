@@ -21,7 +21,7 @@ nltk.download("wordnet", quiet=True)
 nltk.download("omw-1.4", quiet=True)
 nltk.download('stopwords', quiet=True)
 
-# Build a regex pattern to match contractions (using the contraction mapping in contractions.py):
+# Build a regex pattern to match contractions (using the contraction mapping in ``contractions.py``):
 #   - Escape special characters in each contraction (like ' in y'all).
 #   - ordered longest-first for accuracy so "you'd've" matches before "you'd" (Prevents false positive).
 #   - Join with "|" so regex can match any one of them.
