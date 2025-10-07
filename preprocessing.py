@@ -3,7 +3,7 @@ import unicodedata2
 import re
 import nltk
 import os
-from typing import List, Dict, Optional, TypedDict
+from typing import List, Optional
 from nltk import WordNetLemmatizer
 from nltk.corpus import stopwords, wordnet
 from nltk.tokenize.toktok import ToktokTokenizer
@@ -15,21 +15,19 @@ from collections import Counter, deque
 from functools import lru_cache
 
 
-
-
-# Download nltk packages required from the preprocesses
+# Download only required nltk packages
 nltk.download("punkt", quiet=True)
 nltk.download("averaged_perceptron_tagger_eng", quiet=True)
 nltk.download("wordnet", quiet=True)
 nltk.download("omw-1.4", quiet=True)
 nltk.download('stopwords', quiet=True)
 
-"""
-Build a regex pattern to match contractions (using the contraction mapping in contractions.py):
-1. Escape special characters in each contraction (like ' in y'all).
-2. Sort by longest to shortest so "you'd've" matches before "you'd" (Prevents false positive).
-3. Join with "|" so regex can match any one of them.
-"""
+
+# Build a regex pattern to match contractions (using the contraction mapping in contractions.py):
+#   - Escape special characters in each contraction (like ' in y'all).
+#   - Sort by longest to shortest so "you'd've" matches before "you'd" (Prevents false positive).
+#   - Join with "|" so regex can match any one of them.
+
 CONTRACTION_PATTERN = re.compile(r'(' + '|'.join(sorted(map(re.escape, CONTRACTION_MAP), key=len, reverse=True)) + r')')
 
 # Initialize tokenizer, lemmatizer, and afinn globally
@@ -58,6 +56,7 @@ remove_special_char = re.compile(r'[^a-zA-Z\s-]')
 # Used to strip hyphens that don't connect two alphabetic characters.
 hyphen_removal = re.compile(r'(?<![a-zA-Z])-|-(?![a-zA-Z])')
 
+
 @lru_cache(maxsize=1)
 def cached_multiword():
     """
@@ -73,6 +72,7 @@ def cached_multiword():
     :rtype: tuple[dict[str, int], int]
     """
     return build_multiword_info(afinn)
+
 
 def save_stopwords(filepath: str = "stopwords.txt") -> None:
     """
@@ -140,7 +140,6 @@ def load_stopwords(filepath: str = "stopwords.txt") -> set[str]:
     return _STOPWORD_CACHE
 
 
-
 def remove_stopwords(tokens: list[str],
                      filepath: str = "stopwords.txt") -> list[str]:
     """
@@ -166,7 +165,6 @@ def remove_stopwords(tokens: list[str],
     return filtered_tokens
 
 
-#Tagging to discover if the word is an adjective, verb, noun or adverb
 def get_wordnet_position(tag: str) -> str:
     """
     Map a Penn Treebank-style POS tag to its WordNet equivalent.
@@ -194,7 +192,6 @@ def get_wordnet_position(tag: str) -> str:
         return wordnet.NOUN
 
 
-# Lemmatization (reduces word to its dictionary form, e.g., "running" -> "run")
 def lemmatize_text(text: list[str]) -> list[str]:
     """
     Lemmatize a list of tokens using POS-aware WordNet mappings.
@@ -220,15 +217,14 @@ def lemmatize_text(text: list[str]) -> list[str]:
         # Map POS tag to WordNet's expected tag set
         wn_pos = get_wordnet_position(tag)
 
-        #Lemmatizing the word
+        # Lemmatizing the word
         lemma = lemmatizer.lemmatize(word, pos=wn_pos)
-        #Prefer form that exists in the AFINN Dictionary
+        # Prefer form that exists in the AFINN Dictionary
         lemmas.append(word if word in afinn else lemma)
 
     return lemmas
 
 
-# Removes html tags like line break <br />
 def remove_html_tags(text: str) -> str:
     """
     Remove HTML tags from the given text.
@@ -368,7 +364,6 @@ def complete_tokenization(
     """
 
     # Splits paragraphs on <br /><br />
-    # Removes any leading or trailing whitespaces
     # if p.strip() ensures empty paragraphs are ignored
     paragraphs = [p.strip() for p in text.split("<br /><br />") if p.strip()]
 
@@ -378,7 +373,7 @@ def complete_tokenization(
     global alias_map
     if alias_map is None and alias_tsv_path:
         try:
-            alias_map = load_alias_map(alias_tsv_path)  # respect the argument
+            alias_map = load_alias_map(alias_tsv_path)
         except Exception:
             alias_map = {}
 
@@ -387,7 +382,7 @@ def complete_tokenization(
     for p, para in enumerate(paragraphs, 1):
         # Loop through sentences
         # Split paragraph into sentences based on punctuation (. ! ?),
-        # keeping the punctuation attached to the sentence.
+        # keep the punctuation attached to the sentence.
         for s, sentence in enumerate(sentence_splitting.split(para), 1):
             clean_lower = sentence.lower()
 
