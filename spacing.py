@@ -39,7 +39,7 @@ def build_trie(word_cost_map: Dict[str, float]) -> TrieNode:
     return trie
 
 @lru_cache(maxsize=1)
-def _cached_trie(csv_file: str = "unigram_freq.csv") -> TrieNode:
+def cached_trie(csv_file: str = "unigram_freq.csv") -> TrieNode:
     """
 Load unigram frequency data from a CSV file, convert word frequencies
     into negative log-probability costs, build a trie from those costs, and
@@ -185,7 +185,7 @@ Segment alphabetic portions of a string using a trie-based word-break model
     for tok in tokens:
         if WORD_RE.fullmatch(tok):
 
-            seg, _ = infer_spaces_trie(tok, _cached_trie())
+            seg, _ = infer_spaces_trie(tok, cached_trie())
 
             # Normalize curly apostrophes first
             seg = seg.replace("’", "'")
