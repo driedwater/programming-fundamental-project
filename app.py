@@ -138,7 +138,7 @@ def results():
         message_sentences_negative=message_sentences_negative,
         message_sliding_1=message_sliding_1,
         message_sliding_2=message_sliding_2,
-        entire_text=str(file_content),
+        entire_text=file_content,
         pos_sentence=pos_sentence,
         neg_sentence=neg_sentence,
         pos_fig=pos_fig,
