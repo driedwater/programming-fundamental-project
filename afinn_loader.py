@@ -10,7 +10,7 @@ REMOTE_AFINN_URL = "https://raw.githubusercontent.com/fnielsen/afinn/master/afin
 _lock = threading.Lock()
 
 #Returns the afinn txt file in dictionary format
-def _parse_afinn(text: str) -> dict[str, int]:
+def parse_afinn(text: str) -> dict[str, int]:
     """
     Parse raw AFINN lexicon text into a dictionary.
 
@@ -64,14 +64,14 @@ def get_afinn() -> dict[str, int]:
 
         #Uses the locally stored afinn file first
         if LOCAL_AFINN_PATH.exists():
-            return _parse_afinn(LOCAL_AFINN_PATH.read_text(encoding="utf-8"))
+            return parse_afinn(LOCAL_AFINN_PATH.read_text(encoding="utf-8"))
 
         # Local file missing → fetch and persist for next runs
         resp = requests.get(REMOTE_AFINN_URL, timeout=10)
         resp.raise_for_status()
         LOCAL_AFINN_PATH.parent.mkdir(parents=True, exist_ok=True)
         LOCAL_AFINN_PATH.write_text(resp.text, encoding="utf-8")
-        return _parse_afinn(resp.text)
+        return parse_afinn(resp.text)
 
 
 
