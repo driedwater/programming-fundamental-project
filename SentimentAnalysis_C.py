@@ -1,3 +1,8 @@
+class InsufficientSentencesError(IndexError):
+    """Raised when there are not enough sentences to perform the analysis."""
+    pass
+
+
 # Identify the sentence with the highest sentiment score in the entire text
 def most_positive_sentence(Dictionary: list[dict]) -> tuple[float, str] | str:
     try:
@@ -12,7 +17,7 @@ def most_positive_sentence(Dictionary: list[dict]) -> tuple[float, str] | str:
         return (max_score, combined_sentence)
 
     except:
-        return ("Insufficient sentences available")
+        raise InsufficientSentencesError("Insufficient sentences available")
 
 
 # Identify the sentence with the lowest sentiment score in the entire text
@@ -28,5 +33,5 @@ def most_negative_sentence(Dictionary: list[dict]) -> tuple[float, str] | str:
         
         return (min_score, combined_min_sentence)
 
-    except:
-        return ("Insufficient sentences available")
+    except Exception:
+        raise InsufficientSentencesError("Insufficient sentences available")
