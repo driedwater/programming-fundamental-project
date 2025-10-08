@@ -3,6 +3,9 @@ from SlidingWindow import max_sentences
 #     num_of_sentences = len(Dict)
 #     return num_of_sentences
 
+class InsufficientSentencesError_Sliding2(IndexError):
+    """Raised when there are not enough sentences to perform the analysis."""
+    pass
 
 def sliding_window_2(Dictionary: list[dict] )-> list[list[dict[str, float]]] | str:
     para_pos = 0
@@ -100,5 +103,5 @@ def sliding_window_2(Dictionary: list[dict] )-> list[list[dict[str, float]]] | s
 
         return [max_segments,min_segments]
 
-    except:
-        return "Unable to calculate sliding window"
+    except Exception:
+        raise InsufficientSentencesError_Sliding2("Unable to calculate sliding window")

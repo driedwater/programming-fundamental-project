@@ -3,17 +3,31 @@ import json
 from flask import Flask, render_template, request, redirect, url_for
 from preprocessing import complete_tokenization
 from sentiment_analysis import compute_all_sentences
-from SentimentAnalysis_C import most_positive_sentence, most_negative_sentence
+from SentimentAnalysis_C import most_positive_sentence, most_negative_sentence, InsufficientSentencesError
 from chart import sentiment_gauge
-from SlidingWindow import sliding_window
-from SlidingWindow2 import sliding_window_2
+from SlidingWindow import sliding_window, InsufficientSentencesError_Sliding
+from SlidingWindow2 import sliding_window_2, InsufficientSentencesError_Sliding2
 import urllib.parse
-from spacing import load_word_costs, smart_segment
+from spacing import smart_segment
 
 app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    """
+    Main route for file upload and preprocessing.
+
+    **GET method**
+        Displays the home page and upload form.
+
+    **POST method**
+        Handles uploaded `.txt` files, performs segmentation if needed,
+        tokenizes and computes sentiment for each sentence, and redirects
+        to the results page.
+
+    :return: Rendered `index.html` page or redirect to `/results`
+    :rtype: flask.Response
+    """
     message, content = None, None
 
     if request.method == "POST":
@@ -22,19 +36,16 @@ def index():
         # Check if there is a file and filename
         if not file or file.filename == "":
             message = "Choose a file to upload first!"
-        # Accept only .txt files
+            # Accept only .txt files
         elif not file.filename.endswith(".txt"):
             message = "Please upload a .txt file!"
         else:
             # Reading file content directly without saving locally
             try:
                 content = file.read().decode("utf-8")
-                print("origin:", content)
                 # Part of project requirements, checks strictly for strings with no spaces
                 if " " not in content.strip():
-                    word_cost, maxword = load_word_costs("unigram_freq.csv")
-                    content = smart_segment(content, word_cost, maxword)
-                    print("spacy:", content)
+                    content = smart_segment(content)
 
                 tokens = complete_tokenization(content)
                 sentences_dict = compute_all_sentences(tokens)
@@ -50,61 +61,97 @@ def index():
 
 @app.route('/results')
 def results():
+    """
+    Route for displaying sentiment analysis results.
+
+    This route processes precomputed sentiment scores, extracts:
+    - The most positive and negative sentences
+    - Fixed-size and dynamic sliding window summaries
+
+    It also handles potential errors from any imported analysis functions.
+
+    :query json_data: JSON string containing tokenized sentences and scores
+    :query file_content: Encoded original text
+    :return: Rendered `results.html` template with sentiment data or error message
+    :rtype: flask.Response
+    """
     json_data = request.args.get("json_data")
     file_content = request.args.get("file_content", "")
     # Decode content from URL
     file_content = urllib.parse.unquote(file_content)
     sentences_dict = json.loads(json_data)
-    most_positive = most_positive_sentence(sentences_dict)
-    most_negative = most_negative_sentence(sentences_dict)
-    sw_result = sliding_window(sentences_dict)
-    sw2_result = sliding_window_2(sentences_dict)
 
-    if not sw2_result or not sw_result or not most_positive or not most_negative:
-        # Error case: sw_result contains empty dictionary or empty list
-        # Display error message for pos_extract and neg_extract instead of the sentence
-        most_positive, most_negative = "Insufficient sentences available"
-        pos_extract, neg_extract = "Unable to calculate sliding window"
-    else:
-           
-        #Sliding window 1 (Fixed window size of 3)
+    # Default values
+    message_sentences_positive = ""
+    message_sentences_negative = ""
+    message_sliding_1 = ""
+    message_sliding_2 = ""
+    most_positive = ""
+    most_negative = ""
+    pos_sentence = neg_sentence = ""
+    pos_fig = neg_fig = ""
+    pos_extract = neg_extract = ""
+    pos_extract_fig = neg_extract_fig = ""
+    pos_extract2 = neg_extract2 = ""
+    pos_extract_fig2 = neg_extract_fig2 = ""
+    try:
+        most_positive = most_positive_sentence(sentences_dict)
+        pos_sentence = most_positive[1]
+        pos_fig = sentiment_gauge(most_positive[0])
+    except InsufficientSentencesError as e:
+        message_sentences_positive += f"{str(e)}"
+
+    try:
+        most_negative = most_negative_sentence(sentences_dict)
+        neg_sentence = most_negative[1]
+        neg_fig = sentiment_gauge(most_negative[0])
+    except InsufficientSentencesError as e:
+        message_sentences_negative += f"{str(e)}"
+
+    try:
+        # Sliding window 1 (Fixed window size of 3)
+        sw_result = sliding_window(sentences_dict)
         positive_para, negative_para = sw_result
         pos_extract = " ".join(positive_para[0])
         neg_extract = " ".join(negative_para[0])
         pos_extract_fig = sentiment_gauge(positive_para[1])
         neg_extract_fig = sentiment_gauge(negative_para[1])
+    except InsufficientSentencesError_Sliding as e:
+        message_sliding_1 += f"{str(e)}"
 
-        #Sliding window 2 (No fixed window size)
+    try:
+        # Sliding window 2 (No fixed window)
+        sw2_result = sliding_window_2(sentences_dict)
         max_segments, min_segments = sw2_result
-        # Get the longest sentence from paragraph extract if there's more than 1 sentence with the same sentiment score
         most_positive_dict = max(max_segments, key=lambda d: len(d["sentence"])) if max_segments else {"sentence": "", "score": 0}
         most_negative_dict = max(min_segments, key=lambda d: len(d["sentence"])) if min_segments else {"sentence": "", "score": 0}
-        pos_extract2 = most_positive_dict["sentence"]
-        neg_extract2 = most_negative_dict["sentence"]
-        # only render chart when a score is given
+        pos_extract2 = most_positive_dict["sentence"].strip()
+        neg_extract2 = most_negative_dict["sentence"].strip()
         pos_extract_fig2 = sentiment_gauge(most_positive_dict["score"])
         neg_extract_fig2 = sentiment_gauge(most_negative_dict["score"])
+    except InsufficientSentencesError_Sliding2 as e:
+        message_sliding_2 += f"{str(e)}"
 
     return render_template(
         "results.html",
-        entire_text=file_content,
-        pos_sentence=most_positive[1],
-        neg_sentence=most_negative[1],
-        pos_fig=sentiment_gauge(most_positive[0]),
-        neg_fig=sentiment_gauge(most_negative[0]),
+        message_sentences_positive=message_sentences_positive,
+        message_sentences_negative=message_sentences_negative,
+        message_sliding_1=message_sliding_1,
+        message_sliding_2=message_sliding_2,
+        entire_text=str(file_content),
+        pos_sentence=pos_sentence,
+        neg_sentence=neg_sentence,
+        pos_fig=pos_fig,
+        neg_fig=neg_fig,
         pos_extract=pos_extract,
         pos_extract_fig=pos_extract_fig,
         neg_extract=neg_extract,
-        neg_extract_fig = neg_extract_fig,
-        pos_extract_fig2=pos_extract_fig2,
+        neg_extract_fig=neg_extract_fig,
         pos_extract2=pos_extract2,
-        neg_extract_fig2=neg_extract_fig2,
-        neg_extract2=neg_extract2
+        pos_extract_fig2=pos_extract_fig2,
+        neg_extract2=neg_extract2,
+        neg_extract_fig2=neg_extract_fig2
     )
-
+    
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-
-

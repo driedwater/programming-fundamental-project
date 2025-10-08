@@ -1,65 +1,8 @@
 import re
+import pandas as pd
 import math
 from typing import Dict, Union, cast
 from functools import lru_cache
-from unigram_freq import UNIGRAM_FREQ_MAP
-
-TrieNode = Dict[str, Union["TrieNode", float]]
-END_MARK = "_end_"
-WORD_RE = re.compile(r"[A-Za-z]+(?:['’][A-Za-z]+)*")
-
-
-def build_trie(word_cost_map: Dict[str, float]) -> TrieNode:
-    """
-    Construct a trie (prefix tree) from a mapping of words to cost values.
-
-    Each word is inserted one character at a time into a nested dictionary
-    structure. The final character node of each word stores its associated
-    cost under the `END_MARK` key.
-
-    :param word_cost_map: A mapping where each key is a word and each value
-                          is the word frequency.
-    :type word_cost_map: Dict[str, float]
-
-    :return: A nested dictionary representing the trie. Each character maps
-             to another node, and terminal nodes contain an `END_MARK` key
-             storing the word’s cost.
-    :rtype: TrieNode
-    """
-    trie_root: TrieNode = {}
-    for word, cost in word_cost_map.items():
-        current_node = trie_root
-        for char in word:
-            current_node = current_node.setdefault(char, {})
-        current_node[END_MARK] = float(cost)
-    return trie_root
-
-
-@lru_cache(maxsize=1)
-def _cached_trie() -> TrieNode:
-    """
-    Load unigram frequency data from the Python dictionary UNIGRAM_FREQ_MAP,
-    convert word frequencies into negative log-probability costs, build a
-    trie from those costs, and cache the result for reuse.
-
-    :return: A trie where each path corresponds to a word and each terminal
-             node stores the associated cost under the `END_MARK` key.
-    :rtype: TrieNode
-    """
-    total = float(sum(UNIGRAM_FREQ_MAP.values())) or 1.0
-    inv_total = 1.0 / total  # precompute for efficiency
-
-    # Compute costs directly from dictionary items
-    word_costs = {w: -math.log(max(c * inv_total, 1e-12)) for w, c in UNIGRAM_FREQ_MAP.items()}
-
-    return build_trie(word_costs)
-
-
-import re
-import math
-from typing import Dict, Union, cast
-from functools import lru_cache
-from unigram_freq import UNIGRAM_FREQ_MAP
 
 TrieNode = Dict[str, Union["TrieNode", float]]
 END_MARK = "_end_"
@@ -83,43 +26,54 @@ def build_trie(word_cost_map: Dict[str, float]) -> TrieNode:
              storing the word’s cost.
     :rtype: TrieNode
     """
-    trie_root: TrieNode = {}
+    trie: TrieNode = {}
     for word, cost in word_cost_map.items():
-        current_node = trie_root
-        for char in word:
-            current_node = current_node.setdefault(char, {})
-        current_node[END_MARK] = float(cost)
-    return trie_root
-
+        node = trie
+        for ch in word:
+            nxt = node.get(ch)
+            if not isinstance(nxt, dict):
+                nxt = {}
+                node[ch] = nxt
+            node = nxt
+        node[END_MARK] = float(cost)
+    return trie
 
 @lru_cache(maxsize=1)
-def _cached_trie() -> TrieNode:
+def _cached_trie(csv_file: str = "unigram_freq.csv") -> TrieNode:
     """
-    Load unigram frequency data from the Python dictionary UNIGRAM_FREQ,
-    convert word frequencies into negative log-probability costs, build a
-    trie from those costs, and cache the result for reuse.
+Load unigram frequency data from a CSV file, convert word frequencies
+    into negative log-probability costs, build a trie from those costs, and
+    cache the result for reuse.
+
+    The CSV file must contain at least the following columns:
+      - "word":  the word string
+      - "count": the frequency or occurrence count
+
+    After building the trie, the result is stored in an LRU cache with
+    a maximum size of 1, preventing repeated recomputation.
+
+    :param csv_file: Path to the CSV file containing "word" and "count"
+                     columns. Defaults to "unigram_freq.csv".
+    :type csv_file: str, optional
 
     :return: A trie where each path corresponds to a word and each terminal
              node stores the associated cost under the `END_MARK` key.
     :rtype: TrieNode
     """
-    total_count = float(sum(UNIGRAM_FREQ_MAP.values())) or 1.0
-    inv_total = 1.0 / total_count  # precompute for efficiency
-
-    # Compute costs directly from dictionary items
-    word_costs = {word: -math.log(max(count * inv_total, 1e-12))
-                  for word, count in UNIGRAM_FREQ_MAP.items()}
-
-    return build_trie(word_costs)
-
+    df = pd.read_csv(csv_file)
+    words = df["word"].astype(str).str.lower().tolist()
+    counts = df["count"].astype(float).tolist()
+    total = float(sum(counts)) or 1.0
+    costs = {w: -math.log(max(c / total, 1e-12)) for w, c in zip(words, counts)}
+    return build_trie(costs)
 
 def infer_spaces_trie(
-    text: str,
+    s: str,
     trie_root: TrieNode,
     unknown_char_cost: float = 12.0,
 ):
     """
-    Segment a continuous string by inferring word boundaries using a trie-based
+Segment a continuous string by inferring word boundaries using a trie-based
     dynamic programming approach.
 
     Behavior:
@@ -131,8 +85,8 @@ def infer_spaces_trie(
           ensuring progression even for unrecognized substrings.
         • Reconstructs the lowest-cost segmentation by backtracking from the end of the string.
 
-    :param text: The alphabetic string to segment.
-    :type text: str
+    :param s: The alphabetic string to segment.
+    :type s: str
 
     :param trie_root: The root of the trie containing words and associated costs.
     :type trie_root: TrieNode
@@ -146,62 +100,61 @@ def infer_spaces_trie(
              • The total cost of that segmentation.
     :rtype: tuple[str, float]
     """
-    if not text:
-        return text, 0.0
+    if not s:
+        return s, 0.0
 
-    lowercase_text = text.lower()
-    text_length = len(lowercase_text)
+    lower = s.lower()
+    n = len(lower)
 
-    min_cost = [float("inf")] * (text_length + 1)
-    backtrack_index = [-1] * (text_length + 1)
-    min_cost[0] = 0.0
+    dp_cost = [float("inf")] * (n + 1)
+    back = [-1] * (n + 1)
+    dp_cost[0] = 0.0
 
-    for start_index in range(text_length):
-        current_cost = min_cost[start_index]
-        if current_cost == float("inf"):
+    for i in range(n):
+        base = dp_cost[i]
+        if base == float("inf"):
             continue
 
-        # Walk the trie forward from start_index
-        current_node: TrieNode = trie_root
-        end_index = start_index
-        while end_index < text_length:
-            next_node = current_node.get(lowercase_text[end_index])
-            if not isinstance(next_node, dict):
+        # Walk the trie forward from i
+        node: TrieNode = trie_root
+        j = i
+        while j < n:
+            nxt = node.get(lower[j])
+            if not isinstance(nxt, dict):
                 break
-            current_node = next_node
-            end_index += 1
+            node = nxt
+            j += 1
 
             # If this node ends a word, consider cutting here
-            if END_MARK in current_node:
-                word_cost = cast(float, current_node[END_MARK])
-                new_cost = current_cost + word_cost
-                if new_cost < min_cost[end_index]:
-                    min_cost[end_index] = new_cost
-                    backtrack_index[end_index] = start_index
+            if END_MARK in node:
+                word_cost = cast(float, node[END_MARK])
+                new_cost = base + word_cost
+                if new_cost < dp_cost[j]:
+                    dp_cost[j] = new_cost
+                    back[j] = i
 
         # Unknown fall-through (advance by one char with penalty)
-        unknown_cost_total = current_cost + unknown_char_cost
-        if unknown_cost_total < min_cost[start_index + 1]:
-            min_cost[start_index + 1] = unknown_cost_total
-            backtrack_index[start_index + 1] = start_index
+        unk_cost = base + unknown_char_cost
+        if unk_cost < dp_cost[i + 1]:
+            dp_cost[i + 1] = unk_cost
+            back[i + 1] = i
 
-    # Reconstruct the segmented string
-    segmented_words = []
-    current_index = text_length
-    while current_index > 0:
-        prev_index = backtrack_index[current_index]
-        if prev_index < 0:
-            return lowercase_text, min_cost[text_length]  # safety
-        segmented_words.append(lowercase_text[prev_index:current_index])
-        current_index = prev_index
+    # Reconstruct
+    out = []
+    j = n
+    while j > 0:
+        i = back[j]
+        if i < 0:
+            return lower, dp_cost[n]  # safety
+        out.append(lower[i:j])
+        j = i
 
-    segmented_words.reverse()
-    return " ".join(segmented_words), min_cost[text_length]
-
+    out.reverse()
+    return " ".join(out), dp_cost[n]
 
 def smart_segment(text: str) -> str:
     """
-    Segment alphabetic portions of a string using a trie-based word-break model
+Segment alphabetic portions of a string using a trie-based word-break model
     while preserving all non-alphabetic content.
 
     Behavior:
@@ -224,46 +177,44 @@ def smart_segment(text: str) -> str:
              formatting.
     :rtype: str
     """
+
     # Keep delimiters (punctuation/whitespace/numbers)
     tokens = re.split(r"([^A-Za-z'’]+)", text)
-    segmented_parts = []
+    out_parts = []
 
-    for token in tokens:
-        if WORD_RE.fullmatch(token):
+    for tok in tokens:
+        if WORD_RE.fullmatch(tok):
 
-            segmented_text, _ = infer_spaces_trie(token, _cached_trie())
+            seg, _ = infer_spaces_trie(tok, _cached_trie())
 
-            # Normalize curly apostrophes
-            segmented_text = segmented_text.replace("’", "'")
+            # Normalize curly apostrophes first
+            seg = seg.replace("’", "'")
 
-            # Merge split "n ' t" into "n't", then merges base + space + n't
-            segmented_text = re.sub(r"(?i)\bn\s*'\s*t\b", "n't", segmented_text)
-            segmented_text = re.sub(r"(?i)\b([A-Za-z]+)\s+n'\s*t\b", r"\1n't", segmented_text)
+            #Merge split "n ' t" into "n't", then merges base + space + n't (Specifically handles isn't)
+            seg = re.sub(r"(?i)\bn\s*'\s*t\b", "n't", seg)
+            seg = re.sub(r"(?i)\b([A-Za-z]+)\s+n'\s*t\b", r"\1n't", seg)
 
             # Maintains no spaces around apostrophes
-            segmented_text = re.sub(r"\s*(['’])\s*", r"\1", segmented_text)
+            seg = re.sub(r"\s*(['’])\s*", r"\1", seg)
 
             # Merges contractions split by the model
-            segmented_text = re.sub(
-                r"(?i)\b([A-Za-z]+)\s*(['’](?:t|s|re|ve|ll|d|m))\b", r"\1\2", segmented_text
-            )
+            seg = re.sub(r"(?i)\b([A-Za-z]+)\s*(['’](?:t|s|re|ve|ll|d|m))\b", r"\1\2", seg)
 
-            # Inserts a space if a contraction is immediately followed by another letter
-            segmented_text = re.sub(r"(?i)(['’](?:t|s|re|ve|ll|d|m))(?=[A-Za-z])", r"\1 ", segmented_text)
+            # 3) Inserts a space if a contraction is immediately followed by another letter
+            seg = re.sub(r"(?i)(['’](?:t|s|re|ve|ll|d|m))(?=[A-Za-z])", r"\1 ", seg)
 
-            segmented_parts.append(segmented_text)
+            out_parts.append(seg)
         else:
             # Ensure a space follows ending punctuation
-            if token and token[-1] in ".!?,":
-                if not token.endswith(" "):
-                    token += " "
-            segmented_parts.append(token)
+            if tok and tok[-1] in ".!?,":
+                if not tok.endswith(" "):
+                    tok += " "
+            out_parts.append(tok)
 
-    return "".join(segmented_parts)
+    return "".join(out_parts)
 
-
-sampletext = "okay...firsttoAnnericeBOOKfans....<br/><br/>surelestat'seyesarenotblue...sureheisn'tblondinthismovie...buteventhoughMariusisnotlestat'smaker...eventhoughtheyCOMPLETELYalteredthestory.....<br/><br/>howcanusayitsnotagoodmovie..<br/><br/>thismovie...istheBESTvampiremovieieversaw...andlestatispicturedperfectlyinit....maybenothisfeatures...butidon'tthinkonecanfindabetterlestat....thewayhespeaks...andthewayhelooksatmeremortals...hisarrogance..andsheerloveforfameispicturedflawlessly.<br/><br/>ifuforonce...consideritjustamovie..andnottryandrelateeveryscenetothebook...uwilllovethemovieasmuchasido.<br/><br/>now...tothenonreaders..<br/><br/>bepreparedtofallabsolutelyinlovewiththismovie....ithaseverything....andthegothmusic...islikeanaddedtreat...thedialogues...arebeautiful...andcatching...andeventhoughitsavampiremovie..uwillfindyourselfsmiling...atthewitofthecharacters...anduwillfindyourselfsympathizingwiththevampires..<br/><br/>overall...oneofmyfavmovies...!!10/10"
-
+sampletext = ("quitegood,don'texpectanythinghighculture.......theactingisbad,thestorylinefails,butitisstillafairlynicemovietowatch.why?becauseit'sdark,alittlebitstupid,likeunpredictableandjustentertainingandfuntowatch.donotexpectanything,likeisaid,justseeitforyourselfandyouknowwhatimean.<br/><br/>itisamovie,withoutaplotormemorableacting,butthereareenoughscenesthatwillmakeyoulaugh,cryoratleastmakeyoufeelcompelledtowatchittotheend...<br/><br/>thisisalliwantedtosay....<br/><br/>7/10")
 print (smart_segment(sampletext))
+
 
 
