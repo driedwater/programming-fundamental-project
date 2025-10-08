@@ -1,6 +1,19 @@
 import plotly.graph_objs as go
 import plotly.io as pio
-# Optimized function to create a gauge chart
+    
+"""
+    Generates an HTML representation of a gauge chart for sentiment analysis.
+
+    This function creates a Plotly gauge chart visualizing a sentiment score.
+    The chart displays the score on an axis ranging from -1 (negative) to 1 (positive)
+    and includes a corresponding emoji at the center. The output is a raw HTML string
+    of the Plotly figure, suitable for embedding.
+
+    :param score: The sentiment score to display, expected to be between -1 and 1.
+    :type score: float
+    :return: A string containing the HTML representation of the Plotly gauge chart.
+    :rtype: str
+"""
 def sentiment_gauge(score):
     emoji = "😊" if score >= 0 else "😡"
     
