@@ -3,10 +3,10 @@ import json
 from flask import Flask, render_template, request, redirect, url_for
 from preprocessing import complete_tokenization
 from sentiment_analysis import compute_all_sentences
-from sentiment_sentences import most_positive_sentence, most_negative_sentence, InsufficientSentencesError
+from sentiment_sentences import most_positive_sentence, most_negative_sentence
 from chart import sentiment_gauge
-from sliding_window_fixed import sliding_window, InsufficientSentencesError_Sliding
-from sliding_window_unfixed import sliding_window_2, InsufficientSentencesError_Sliding2
+from sliding_window_fixed import sliding_window
+from sliding_window_unfixed import sliding_window_2
 import urllib.parse
 from spacing import smart_segment
 
@@ -98,15 +98,15 @@ def results():
         most_positive = most_positive_sentence(sentences_dict)
         pos_sentence = most_positive[1]
         pos_fig = sentiment_gauge(most_positive[0])
-    except InsufficientSentencesError as e:
-        message_sentences_positive += f"{str(e)}"
+    except Exception:
+        pos_sentence = most_positive[1]
 
     try:
         most_negative = most_negative_sentence(sentences_dict)
         neg_sentence = most_negative[1]
         neg_fig = sentiment_gauge(most_negative[0])
-    except InsufficientSentencesError as e:
-        message_sentences_negative += f"{str(e)}"
+    except Exception:
+        neg_sentence = most_negative[1]
 
     try:
         # Sliding window 1 (Fixed window size of 3)
@@ -116,8 +116,9 @@ def results():
         neg_extract = " ".join(negative_para[0])
         pos_extract_fig = sentiment_gauge(positive_para[1])
         neg_extract_fig = sentiment_gauge(negative_para[1])
-    except InsufficientSentencesError_Sliding as e:
-        message_sliding_1 += f"{str(e)}"
+    except Exception:
+        pos_extract = sw_result
+        neg_extract = sw_result
 
     try:
         # Sliding window 2 (No fixed window)
@@ -129,8 +130,9 @@ def results():
         neg_extract2 = most_negative_dict["sentence"].strip()
         pos_extract_fig2 = sentiment_gauge(most_positive_dict["score"])
         neg_extract_fig2 = sentiment_gauge(most_negative_dict["score"])
-    except InsufficientSentencesError_Sliding2 as e:
-        message_sliding_2 += f"{str(e)}"
+    except Exception:
+        pos_extract2 = sw2_result
+        neg_extract2 = sw2_result
 
     return render_template(
         "results.html",
