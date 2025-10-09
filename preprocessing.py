@@ -9,7 +9,7 @@ from nltk.corpus import stopwords, wordnet
 from nltk.tokenize.toktok import ToktokTokenizer
 from contractions import CONTRACTION_MAP
 from afinn_loader import get_afinn
-from ngram_multiwords import build_multiword_info, fold_multiword_phrases
+from multiword_restore import fold_multiword_phrases_using_globals
 from aliases import load_alias_map
 from collections import Counter, deque
 from functools import lru_cache
@@ -53,23 +53,6 @@ remove_special_char = re.compile(r'[^a-zA-Z\s-]')
 #   - OR a hyphen not followed by a letter
 # Used to strip hyphens that don't connect two alphabetic characters.
 hyphen_removal = re.compile(r'(?<![a-zA-Z])-|-(?![a-zA-Z])')
-
-
-@lru_cache(maxsize=1)
-def cached_multiword():
-    """
-    Precompute and cache multi-word information from AFINN lexicon.
-
-    Result is generated once using ``build_multiword_info`` and is stored in
-    an LRU cache so subsequent calls avoid redundant processing.
-
-    :return: A tuple containing:
-             - A dictionary mapping each multi-word phrase to its word count.
-             - An integer representing the maximum number of words in any
-               multi-word phrase.
-    :rtype: tuple[dict[str, int], int]
-    """
-    return build_multiword_info(afinn)
 
 
 def save_stopwords(filepath: str = "stopwords.txt") -> None:
@@ -357,7 +340,6 @@ def complete_tokenization(
 
     hierarchical_tokens = []
 
-    multiword_dict, max_n = cached_multiword()
     global alias_map
     if alias_map is None and alias_tsv_path:
         try:
@@ -389,8 +371,8 @@ def complete_tokenization(
             whitespace_tokens = [token.strip() for token in clean_tokens if token.strip()]
 
             # Fold multi-words with alias matching
-            folded_tokens, matches = fold_multiword_phrases(
-                whitespace_tokens, multiword_dict, max_n, alias_map=alias_map
+            folded_tokens, matches = fold_multiword_phrases_using_globals(
+                whitespace_tokens, alias_map
             )
 
             # Applies stopword removal and lemmatization only for single-word tokens
@@ -431,7 +413,7 @@ def complete_tokenization(
 
     return hierarchical_tokens
 
-sampletext = "quite good, don't expect anything high culture.......the acting is bad, the storyline fails, but it is still a fairly nice movie to watch. why? because it's dark, a little bit stupid, like unpredictable and just entertaining and fun to watch."
+sampletext = ("This place is not good at all. He had some really bad luck yesterday. The food was fucking amazing and the staff were damn good.")
 print (complete_tokenization(sampletext))
 
 
