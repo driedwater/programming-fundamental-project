@@ -3,10 +3,10 @@ import json
 from flask import Flask, render_template, request, redirect, url_for
 from preprocessing import complete_tokenization
 from sentiment_analysis import compute_all_sentences
-from SentimentAnalysis_C import most_positive_sentence, most_negative_sentence, InsufficientSentencesError
+from sentiment_sentences import most_positive_sentence, most_negative_sentence, InsufficientSentencesError
 from chart import sentiment_gauge
-from SlidingWindow import sliding_window, InsufficientSentencesError_Sliding
-from SlidingWindow2 import sliding_window_2, InsufficientSentencesError_Sliding2
+from sliding_window_fixed import sliding_window, InsufficientSentencesError_Sliding
+from sliding_window_unfixed import sliding_window_2, InsufficientSentencesError_Sliding2
 import urllib.parse
 from spacing import smart_segment
 
