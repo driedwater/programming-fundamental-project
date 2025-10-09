@@ -99,14 +99,14 @@ def results():
         pos_sentence = most_positive[1]
         pos_fig = sentiment_gauge(most_positive[0])
     except Exception:
-        pos_sentence = most_positive[1]
+        pos_sentence = most_positive
 
     try:
         most_negative = most_negative_sentence(sentences_dict)
         neg_sentence = most_negative[1]
         neg_fig = sentiment_gauge(most_negative[0])
     except Exception:
-        neg_sentence = most_negative[1]
+        neg_sentence = most_negative
 
     try:
         # Sliding window 1 (Fixed window size of 3)
