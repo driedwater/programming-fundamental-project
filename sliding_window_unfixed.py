@@ -115,8 +115,10 @@ def sliding_window_2(scored_text: list[dict]) -> list[list[dict[str, float]]] | 
 
             # If line is in the next para then update the para pos to the current line pos
             para_pos = line_pos
-
-        return [max_segments, min_segments]
+        if max_segments == [] and min_segments == []:
+            return "Unable to calculate sliding window"
+        else:
+            return [max_segments, min_segments]
 
     except:
         return "Unable to calculate sliding window"
