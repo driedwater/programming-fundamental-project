@@ -18,7 +18,7 @@
     <textarea readonly class="sentiment-text">{% if message_sentences_negative %}{{ message_sentences_negative }}{% else %}{{ neg_sentence }}{% endif %}</textarea>
     {{ neg_fig | safe }}
     
-    <h2> Sliding Window 1</h2>
+    <h2> Sliding Window 1 (fixed segment, 3 sentences)</h2>
     <h2>Most positive paragraph extract:</h2>
     <textarea readonly class="sentiment-text">{% if message_sliding_1 %}{{ message_sliding_1 | trim }}{% else %}{{ pos_extract | trim | safe }}{% endif %}</textarea>
     {{ pos_extract_fig | safe }}
@@ -27,7 +27,7 @@
     <textarea readonly class="sentiment-text">{% if message_sliding_1 %}{{ message_sliding_1 | trim }}{% else %}{{ neg_extract | trim | safe }}{% endif %}</textarea>
     {{ neg_extract_fig | safe }}
 
-    <h2>Sliding Window 2</h2>
+    <h2>Sliding Window 2 (unfixed segment)</h2>
     <h2>Most positive paragraph extract:</h2>
     <textarea readonly class="sentiment-text">{% if message_sliding_2 %}{{ message_sliding_2 }}{% else %}{{ pos_extract2 | trim | safe }}{% endif %}</textarea>
     {{ pos_extract_fig2 | safe }}
