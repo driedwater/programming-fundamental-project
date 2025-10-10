@@ -413,7 +413,4 @@ def complete_tokenization(
 
     return hierarchical_tokens
 
-sampletext = ("This place is not good at all. He had some really bad luck yesterday. The food was fucking amazing and the staff were damn good.")
-print (complete_tokenization(sampletext))
-
 

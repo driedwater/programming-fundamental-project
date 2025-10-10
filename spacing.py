@@ -205,7 +205,3 @@ def smart_segment(text: str) -> str:
     return "".join(segmented_parts)
 
 
-sampletext = "okay...firsttoAnnericeBOOKfans....<br/><br/>surelestat'seyesarenotblue...sureheisn'tblondinthismovie...buteventhoughMariusisnotlestat'smaker...eventhoughtheyCOMPLETELYalteredthestory.....<br/><br/>howcanusayitsnotagoodmovie..<br/><br/>thismovie...istheBESTvampiremovieieversaw...andlestatispicturedperfectlyinit....maybenothisfeatures...butidon'tthinkonecanfindabetterlestat....thewayhespeaks...andthewayhelooksatmeremortals...hisarrogance..andsheerloveforfameispicturedflawlessly.<br/><br/>ifuforonce...consideritjustamovie..andnottryandrelateeveryscenetothebook...uwilllovethemovieasmuchasido.<br/><br/>now...tothenonreaders..<br/><br/>bepreparedtofallabsolutelyinlovewiththismovie....ithaseverything....andthegothmusic...islikeanaddedtreat...thedialogues...arebeautiful...andcatching...andeventhoughitsavampiremovie..uwillfindyourselfsmiling...atthewitofthecharacters...anduwillfindyourselfsympathizingwiththevampires..<br/><br/>overall...oneofmyfavmovies...!!10/10"
-print (smart_segment(sampletext))
-
-
