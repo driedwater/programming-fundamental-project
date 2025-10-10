@@ -99,6 +99,7 @@ def sliding_window_2(scored_text: list[dict]) -> list[list[dict[str, float]]] | 
                     min_temp_score = current_score
                     min_start = line_pos
 
+                # If the existing scoring is not positive then add the current score to the existing scoring
                 else:
                     min_temp_score += current_score
 
