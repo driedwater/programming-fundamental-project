@@ -12,7 +12,7 @@ def most_positive_sentence(scored_text: list[dict]) -> tuple[float, str] | str:
 
     try:
         # Retrieve all the score and skip the sentence if it does not have any tokenized word to be scored
-        score_list = [line['score'] for line in scored_text if line['tokens'] != ""]
+        score_list = [line['score'] for line in scored_text if line['tokens'] != []]
         max_score = max(score_list)
         # Retrieve all sentences that have this max score
         max_sentences = [line['original'] for line in scored_text if line['score'] == max_score]
@@ -38,7 +38,7 @@ def most_negative_sentence(scored_text: list[dict]) -> tuple[float, str] | str:
 
     try:
         # Retrieve all the score and skip the sentence if it does not have any tokenized word to be scored
-        score_list = [line['score'] for line in scored_text if line['tokens'] != ""]
+        score_list = [line['score'] for line in scored_text if line['tokens'] != []]
         min_score = min(score_list)
         # Retrieve all sentences that have this min score
         min_sentences = [line['original'] for line in scored_text if line['score'] == min_score]
