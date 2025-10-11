@@ -3,23 +3,25 @@ from afinn_loader import get_afinn
 def get_sentence_score(afinn: dict, tokenized_sentence: dict) -> float:
     """
     This function calculates the sentiment score of the tokenised sentence,
-    check if word exist in afinn_dict then adding up the score and dividing by
+    check if word exist in afinn then adding up the score and dividing by
     total tokenised word count.
     Afterwards it will rescale the score so that it ranges from -1 to 1 instead of -5 to 5.
 
     :param afinn: the dataset to use to find the score of each word
+    :type afinn: dict
+
     :param tokenized_sentence: the sentence we want to find the sentiment score of
+    :type tokenized_sentence: dict
+
     :returns: sentiment score of the sentence
+    :rtype: float
     """
     
     score = 0
     tokens_word_count = len(tokenized_sentence)
-    afinn_words_list = list(afinn.keys())
 
     for word in tokenized_sentence:
-        found = binary_search(afinn_words_list, word)
-
-        if found:
+        if word in afinn:
             score += afinn[word]
     
     if tokens_word_count == 0:
@@ -33,47 +35,18 @@ def get_sentence_score(afinn: dict, tokenized_sentence: dict) -> float:
     return rescaled_score
 
 
-def binary_search(input_list: list, word: str) -> bool:
-    """
-    this function will use binary search algorithm to search for an item in a list
-
-    :params input_list: the list of items to search in
-    :params word: the word to search in the list
-
-    :returns: true if found, false if not found
-    """
-
-    # left and right index of the array
-    left_index = 0
-    right_index = len(input_list) - 1
-
-    while left_index <= right_index:
-
-        mid_index = (left_index + right_index) // 2
-
-        # if word is found return true
-        if input_list[mid_index] == word:
-            return True
-
-        # if the word is bigger than the current word
-        # we will automatically ignore anything below the mid index
-        elif input_list[mid_index] < word:
-            left_index = mid_index + 1
-
-        # if word is smaller than current word
-        # then let right index be the mid index
-        else:
-            right_index = mid_index - 1
-
-    return False
-
-
 def add_score_to_dict(sentences_list: list[dict], score_list: list) -> list[dict]:
     """
-    add sentiment score to a dictionary
+    add sentiment score to each dictionary in the list of dictionaries
 
     :params sentences_list: the list containing dictionaries where the function will add scores to
+    :type sentences_list: list[dict]
+
     :params score_list: the list of scores to add to each dictionary
+    :type score_list: list
+
+    :returns: updated list of dictionaries containing scores for each sentence
+    :rtype: list[dict]
     """
 
     for index, sentence_dict in enumerate(sentences_list):
@@ -88,8 +61,11 @@ def compute_all_sentences(sentences_list: list[dict]) -> list[dict]:
     computes all the sentiment score of the sentence dictionary in the list
     and output the score.
 
-    :params sentences_list: the list of dictionaries containing the sentences used to compute the sentiment score 
-    :returns: the same list[dict] but with scoring in each dictionary
+    :params sentences_list: the list of dictionaries containing the sentences used to compute the sentiment score
+    :type sentences_list: list[dict]
+
+    :returns: the same sentences_list but with scoring in each dictionary
+    :rtype: list[dict]
     """
     afinn = get_afinn()
     score_list = []
